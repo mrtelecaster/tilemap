@@ -9,13 +9,19 @@ use crate::{TileMap, traits::*};
 
 
 
+// TYPE ALIASES --------------------------------------------------------------------------------- //
+
 /// Basic hexagon tilemap
+/// 
+/// Uses [`AxialCoords`] for its coordinate system for storage space efficiency
 pub type HexMap<T, U> = AxialHexMap<T, U>;
 
 /// Hexagon-based [`TileMap`] using [axial coordinates](AxialCoords)
 pub type AxialHexMap<T, U> = TileMap<AxialCoords<U>, T>;
 
 
+
+// AXIAL HEX COORDS ----------------------------------------------------------------------------- //
 
 /// Axial hexagon coordinate system
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
