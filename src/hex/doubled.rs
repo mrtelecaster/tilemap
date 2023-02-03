@@ -36,7 +36,7 @@ impl<T> DoubledCoords<T> {
 	}
 }
 
-impl<T> TileCoords<T> for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> {
+impl<T> TileCoords for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> + PartialEq {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![
 			self + DoubledCoords::new((-1).into(), (-1).into()),

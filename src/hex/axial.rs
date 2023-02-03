@@ -32,7 +32,7 @@ impl<T> AxialCoords<T> {
 	}
 }
 
-impl<T> TileCoords<T> for AxialCoords<T> where T: Add<Output=T> + Copy + From<isize> {
+impl<T> TileCoords for AxialCoords<T> where T: Add<Output=T> + Copy + From<isize> + PartialEq {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![
 			self + AxialCoords::new(1.into(), 0.into()),

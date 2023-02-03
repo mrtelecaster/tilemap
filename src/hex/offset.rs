@@ -35,7 +35,7 @@ impl<T> OffsetCoords<T> {
 	}
 }
 
-impl<T> TileCoords<T> for OffsetCoords<T> where T: Add<Output=T> + Copy + From<isize> {
+impl<T> TileCoords for OffsetCoords<T> where T: Add<Output=T> + Copy + From<isize> + PartialEq {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![
 			self + OffsetCoords::new((-1).into(), (-1).into()),

@@ -36,7 +36,7 @@ impl<T> CubeCoords<T> {
 	}
 }
 
-impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Eq + From<isize> + Hash {
+impl<T> TileCoords for CubeCoords<T> where T: Add<Output=T> + Copy + Eq + From<isize> + Hash {
 
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![
