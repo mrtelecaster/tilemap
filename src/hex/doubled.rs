@@ -1,14 +1,14 @@
 //! Doubled hex coordinates. Method for making pseudo-rectangular maps that's a bit more
 //! mathematically elegant than the [Offset coordinate system](crate::hex::offset)
 
-use std::ops::Add;
+use std::{fmt::Debug, ops::Add};
 
 use crate::traits::TileCoords;
 
 
 
 /// A coordinate pair for an offset coordinate hex map
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct DoubledCoords<T> {
 	/// Column
 	pub q: T,
@@ -36,7 +36,7 @@ impl<T> DoubledCoords<T> {
 	}
 }
 
-impl<T> TileCoords for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> + PartialEq {
+impl<T> TileCoords for DoubledCoords<T> where T: Add<Output=T> + Copy + Debug + From<isize> + PartialEq {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![
 			self + DoubledCoords::new((-1).into(), (-1).into()),

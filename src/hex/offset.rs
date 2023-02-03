@@ -1,13 +1,13 @@
 //! Offset hex coordinates. Simple method for making pseudo-rectangular maps
 
-use std::ops::Add;
+use std::{fmt::Debug, ops::Add};
 
 use crate::traits::TileCoords;
 
 
 
 /// A coordinate pair for an offset coordinate hex map
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct OffsetCoords<T> {
 	/// Column
 	pub q: T,
@@ -35,7 +35,7 @@ impl<T> OffsetCoords<T> {
 	}
 }
 
-impl<T> TileCoords for OffsetCoords<T> where T: Add<Output=T> + Copy + From<isize> + PartialEq {
+impl<T> TileCoords for OffsetCoords<T> where T: Add<Output=T> + Copy + Debug + From<isize> + PartialEq {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![
 			self + OffsetCoords::new((-1).into(), (-1).into()),

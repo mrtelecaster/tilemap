@@ -1,6 +1,6 @@
 //! Pre-made types for square grid coordinate systems
 
-use std::ops::Add;
+use std::{fmt::Debug, ops::Add};
 
 use crate::traits::TileCoords;
 
@@ -8,7 +8,7 @@ use crate::traits::TileCoords;
 
 /// Basic square coordinates. Each tile has equal width and height, is uniformly spaced, and has 4
 /// side neighbors and 8 corner neighbors (including the side neighbors)
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct SquareCoords<T> {
 	pub x: T,
 	pub y: T,
@@ -21,7 +21,7 @@ impl<T> SquareCoords<T> {
 	}
 }
 
-impl<T> TileCoords for SquareCoords<T> where T: Add<Output=T> + Copy + From<isize> + PartialEq {
+impl<T> TileCoords for SquareCoords<T> where T: Add<Output=T> + Copy + Debug + From<isize> + PartialEq {
 
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![

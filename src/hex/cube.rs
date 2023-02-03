@@ -1,14 +1,14 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
-use std::{hash::Hash, ops::Add};
-use crate::hex::TileCoords;
+use std::{fmt::Debug, hash::Hash, ops::Add};
+use crate::{traits::TileCoords, hex::axial::AxialCoords};
 
 
 
 // CUBE COORDINATE STRUCT ----------------------------------------------------------------------- //
 
 /// Cube coordinate set
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct CubeCoords<T> {
 	pub q: T,
 	pub r: T,
@@ -36,7 +36,7 @@ impl<T> CubeCoords<T> {
 	}
 }
 
-impl<T> TileCoords for CubeCoords<T> where T: Add<Output=T> + Copy + Eq + From<isize> + Hash {
+impl<T> TileCoords for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + Eq + From<isize> + Hash {
 
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
         vec![
@@ -102,6 +102,12 @@ impl<T> Add<&CubeCoords<T>> for &CubeCoords<T> where T: Add<Output=T> + Copy {
     }
 }
 
+impl<T> From<AxialCoords<T>> for CubeCoords<T> {
+    fn from(_: AxialCoords<T>) -> Self {
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -139,6 +145,11 @@ mod tests {
 				assert!(adjacent_coords.contains(&CubeCoords::new(2, -4, 2)));
 				assert!(adjacent_coords.contains(&CubeCoords::new(3, -4, 1)));
 			}
+		}
+
+		#[test]
+		fn from_axial_coords() {
+			assert_eq!(CubeCoords::new(0, 0, 0), AxialCoords::new(0, 0).into());
 		}
 	}
 }
