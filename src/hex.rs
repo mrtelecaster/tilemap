@@ -5,11 +5,20 @@
 
 use std::ops::{Add, Sub};
 use num::{NumCast, Integer, Signed, traits::real::Real};
-use crate::traits::*;
+use crate::{TileMap, traits::*};
+
+
+
+/// Basic hexagon tilemap
+pub type HexMap<T, U> = AxialHexMap<T, U>;
+
+/// Hexagon-based [`TileMap`] using [axial coordinates](AxialCoords)
+pub type AxialHexMap<T, U> = TileMap<AxialCoords<U>, T>;
+
 
 
 /// Axial hexagon coordinate system
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct AxialCoords<T> where T: Integer {
 	pub q: T,
 	pub r: T,
@@ -63,7 +72,6 @@ impl<T> TileCoords for AxialCoords<T> where T: Copy + Integer + NumCast {
 		let q = sqrt_three / three * x - one / three * y;
 		let r = two / three * y;
 		AxialCoords{ q: NumCast::from(q.round()).unwrap(), r: NumCast::from(r.round()).unwrap() }
-
     }
 
     fn width<F>() -> F where F: NumCast + Real {
@@ -119,10 +127,13 @@ where T: Copy + Integer {
 
 #[cfg(test)]
 mod tests {
+
 	use super::*;
 	mod axial_coords {
+
 		use super::*;
 		mod traits {
+
 			use super::*;
 			mod tile_coords {
 
