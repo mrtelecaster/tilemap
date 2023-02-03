@@ -70,8 +70,11 @@ impl<T> Add<AxialCoords<T>> for &AxialCoords<T> where T: Add<Output=T> + Copy {
 }
 
 impl<T> From<CubeCoords<T>> for AxialCoords<T> {
-    fn from(_: CubeCoords<T>) -> Self {
-        todo!()
+
+	/// Creates a new axial coordinate from the given cube coordinate [as described here]
+	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
+    fn from(c: CubeCoords<T>) -> Self {
+		Self { q: c.q, r: c.r }
     }
 }
 
@@ -116,7 +119,27 @@ mod tests {
 
 		#[test]
 		fn from_cube_coords() {
+			assert_eq!(AxialCoords::new(0, 0), CubeCoords::new(0, 0, 0).into());
 
+			assert_eq!(AxialCoords::new(1, -1), CubeCoords::new(1, -1, 0).into());
+			assert_eq!(AxialCoords::new(1, 0), CubeCoords::new(1, 0, -1).into());
+			assert_eq!(AxialCoords::new(0, 1), CubeCoords::new(0, 1, -1).into());
+			assert_eq!(AxialCoords::new(-1, 1), CubeCoords::new(-1, 1, 0).into());
+			assert_eq!(AxialCoords::new(-1, 0), CubeCoords::new(-1, 0, 1).into());
+			assert_eq!(AxialCoords::new(0, -1), CubeCoords::new(0, -1, 1).into());
+
+			assert_eq!(AxialCoords::new(2, -2), CubeCoords::new(2, -2, 0).into());
+			assert_eq!(AxialCoords::new(2, -1), CubeCoords::new(2, -1, -1).into());
+			assert_eq!(AxialCoords::new(2, 0), CubeCoords::new(2, 0, -2).into());
+			assert_eq!(AxialCoords::new(1, 1), CubeCoords::new(1, 1, -2).into());
+			assert_eq!(AxialCoords::new(0, 2), CubeCoords::new(0, 2, -2).into());
+			assert_eq!(AxialCoords::new(-1, 2), CubeCoords::new(-1, 2, -1).into());
+			assert_eq!(AxialCoords::new(-2, 2), CubeCoords::new(-2, 2, 0).into());
+			assert_eq!(AxialCoords::new(-2, 1), CubeCoords::new(-2, 1, 1).into());
+			assert_eq!(AxialCoords::new(-2, 0), CubeCoords::new(-2, 0, 2).into());
+			assert_eq!(AxialCoords::new(-1, -1), CubeCoords::new(-1, -1, 2).into());
+			assert_eq!(AxialCoords::new(0, -2), CubeCoords::new(0, -2, 2).into());
+			assert_eq!(AxialCoords::new(1, -2), CubeCoords::new(1, -2, 1).into());
 		}
 	}
 }

@@ -1,6 +1,6 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
-use std::{fmt::Debug, hash::Hash, ops::Add};
+use std::{fmt::Debug, hash::Hash, ops::{Add, Neg, Sub}};
 use crate::{traits::TileCoords, hex::axial::AxialCoords};
 
 
@@ -102,9 +102,16 @@ impl<T> Add<&CubeCoords<T>> for &CubeCoords<T> where T: Add<Output=T> + Copy {
     }
 }
 
-impl<T> From<AxialCoords<T>> for CubeCoords<T> {
-    fn from(_: AxialCoords<T>) -> Self {
-        todo!()
+impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T> {
+
+	/// Creates a new cube coordinate from the given axial coordinate [as described here]
+	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
+    fn from(c: AxialCoords<T>) -> Self {
+        Self{
+			q: c.q,
+			r: c.r,
+			s: -c.q - c.r,
+		}
     }
 }
 
@@ -150,6 +157,26 @@ mod tests {
 		#[test]
 		fn from_axial_coords() {
 			assert_eq!(CubeCoords::new(0, 0, 0), AxialCoords::new(0, 0).into());
+
+			assert_eq!(CubeCoords::new(1, -1, 0), AxialCoords::new(1, -1).into());
+			assert_eq!(CubeCoords::new(1, 0, -1), AxialCoords::new(1, 0).into());
+			assert_eq!(CubeCoords::new(0, 1, -1), AxialCoords::new(0, 1).into());
+			assert_eq!(CubeCoords::new(-1, 1, 0), AxialCoords::new(-1, 1).into());
+			assert_eq!(CubeCoords::new(-1, 0, 1), AxialCoords::new(-1, 0).into());
+			assert_eq!(CubeCoords::new(0, -1, 1), AxialCoords::new(0, -1).into());
+
+			assert_eq!(CubeCoords::new(2, -2, 0), AxialCoords::new(2, -2).into());
+			assert_eq!(CubeCoords::new(2, -1, -1), AxialCoords::new(2, -1).into());
+			assert_eq!(CubeCoords::new(2, 0, -2), AxialCoords::new(2, 0).into());
+			assert_eq!(CubeCoords::new(1, 1, -2), AxialCoords::new(1, 1).into());
+			assert_eq!(CubeCoords::new(0, 2, -2), AxialCoords::new(0, 2).into());
+			assert_eq!(CubeCoords::new(-1, 2, -1), AxialCoords::new(-1, 2).into());
+			assert_eq!(CubeCoords::new(-2, 2, 0), AxialCoords::new(-2, 2).into());
+			assert_eq!(CubeCoords::new(-2, 1, 1), AxialCoords::new(-2, 1).into());
+			assert_eq!(CubeCoords::new(-2, 0, 2), AxialCoords::new(-2, 0).into());
+			assert_eq!(CubeCoords::new(-1, -1, 2), AxialCoords::new(-1, -1).into());
+			assert_eq!(CubeCoords::new(0, -2, 2), AxialCoords::new(0, -2).into());
+			assert_eq!(CubeCoords::new(1, -2, 1), AxialCoords::new(1, -2).into());
 		}
 	}
 }
