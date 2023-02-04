@@ -1,7 +1,10 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
-use std::{fmt::Debug, hash::Hash, ops::{Add, Neg, Sub}};
-use crate::{traits::TileCoords, hex::axial::AxialCoords};
+use std::{fmt::Debug, hash::Hash, ops::{Add, Neg, Sub, BitAnd, Div}};
+use crate::{
+	traits::TileCoords,
+	hex::{axial::AxialCoords, doubled::DoubledCoords, offset::OffsetCoords},
+};
 
 
 
@@ -115,6 +118,19 @@ impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + S
     }
 }
 
+impl<T> From<DoubledCoords<T>> for CubeCoords<T> {
+    fn from(_: DoubledCoords<T>) -> Self {
+        todo!()
+    }
+}
+
+impl<T> From<OffsetCoords<T>> for CubeCoords<T> where T: BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+	/// Creates a new cube coordinate set from the given offset coordinates, [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
+    fn from(c: OffsetCoords<T>) -> Self {
+        Self::from(AxialCoords::from(c))
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -122,7 +138,7 @@ mod tests {
 
 	mod traits {
 
-		use super::*;
+use super::*;
 
 		mod tile_coords {
 
@@ -177,6 +193,45 @@ mod tests {
 			assert_eq!(CubeCoords::new(-1, -1, 2), AxialCoords::new(-1, -1).into());
 			assert_eq!(CubeCoords::new(0, -2, 2), AxialCoords::new(0, -2).into());
 			assert_eq!(CubeCoords::new(1, -2, 1), AxialCoords::new(1, -2).into());
+		}
+		
+		#[test]
+		#[ignore]
+		fn from_doubled_coords() {
+			assert_eq!(CubeCoords::new(0, 0, 0), DoubledCoords::new(0, 0).into());
+		}
+
+		#[test]
+		fn from_offset_coords() {
+			assert_eq!(CubeCoords::new(-1, -2, 3), OffsetCoords::new(-2, -2).into());
+			assert_eq!(CubeCoords::new(0, -2, 2), OffsetCoords::new(-1, -2).into());
+			assert_eq!(CubeCoords::new(1, -2, 1), OffsetCoords::new(0, -2).into());
+			assert_eq!(CubeCoords::new(2, -2, 0), OffsetCoords::new(1, -2).into());
+			assert_eq!(CubeCoords::new(3, -2, -1), OffsetCoords::new(2, -2).into());
+
+			assert_eq!(CubeCoords::new(-1, -1, 2), OffsetCoords::new(-2, -1).into());
+			assert_eq!(CubeCoords::new(0, -1, 1), OffsetCoords::new(-1, -1).into());
+			assert_eq!(CubeCoords::new(1, -1, 0), OffsetCoords::new(0, -1).into());
+			assert_eq!(CubeCoords::new(2, -1, -1), OffsetCoords::new(1, -1).into());
+			assert_eq!(CubeCoords::new(3, -1, -2), OffsetCoords::new(2, -1).into());
+
+			assert_eq!(CubeCoords::new(-2, 0, 2), OffsetCoords::new(-2, 0).into());
+			assert_eq!(CubeCoords::new(-1, 0, 1), OffsetCoords::new(-1, 0).into());
+			assert_eq!(CubeCoords::new(0, 0, 0), OffsetCoords::new(0, 0).into());
+			assert_eq!(CubeCoords::new(1, 0, -1), OffsetCoords::new(1, 0).into());
+			assert_eq!(CubeCoords::new(2, 0, -2), OffsetCoords::new(2, 0).into());
+
+			assert_eq!(CubeCoords::new(-2, 1, 1), OffsetCoords::new(-2, 1).into());
+			assert_eq!(CubeCoords::new(-1, 1, 0), OffsetCoords::new(-1, 1).into());
+			assert_eq!(CubeCoords::new(0, 1, -1), OffsetCoords::new(0, 1).into());
+			assert_eq!(CubeCoords::new(1, 1, -2), OffsetCoords::new(1, 1).into());
+			assert_eq!(CubeCoords::new(2, 1, -3), OffsetCoords::new(2, 1).into());
+
+			assert_eq!(CubeCoords::new(-3, 2, 1), OffsetCoords::new(-2, 2).into());
+			assert_eq!(CubeCoords::new(-2, 2, 0), OffsetCoords::new(-1, 2).into());
+			assert_eq!(CubeCoords::new(-1, 2, -1), OffsetCoords::new(0, 2).into());
+			assert_eq!(CubeCoords::new(0, 2, -2), OffsetCoords::new(1, 2).into());
+			assert_eq!(CubeCoords::new(1, 2, -3), OffsetCoords::new(2, 2).into());
 		}
 	}
 }

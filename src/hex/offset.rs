@@ -1,8 +1,8 @@
 //! Offset hex coordinates. Simple method for making pseudo-rectangular maps
 
-use std::{fmt::Debug, ops::Add};
+use std::{fmt::Debug, ops::{Add, BitAnd, Div, Neg, Sub}};
 
-use crate::traits::TileCoords;
+use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, DoubledCoords}};
 
 
 
@@ -72,6 +72,32 @@ impl<T> Add<OffsetCoords<T>> for &OffsetCoords<T> where T: Add<Output=T> + Copy 
 	}
 }
 
+impl<T> From<AxialCoords<T>> for OffsetCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+	/// Creates a new offset coordinate pair from the given axial coordinates, [as described in the
+	/// article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
+    fn from(c: AxialCoords<T>) -> Self {
+        let q = c.q + (c.r - (c.r & 1.into())) / 2.into();
+		let r = c.r;
+		Self{ q, r }
+    }
+}
+
+impl<T> From<CubeCoords<T>> for OffsetCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+	/// Creates a new offset coordinate pair from the given cube coordinate set, [as described in
+	/// the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
+    fn from(c: CubeCoords<T>) -> Self {
+        Self::from(AxialCoords::from(c))
+    }
+}
+
+impl<T> From<DoubledCoords<T>> for OffsetCoords<T> {
+    fn from(_: DoubledCoords<T>) -> Self {
+        todo!()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -109,6 +135,78 @@ mod tests {
 				assert!(adjacent_coords.contains(&OffsetCoords::new(2, 3)));
 				assert!(adjacent_coords.contains(&OffsetCoords::new(2, 2)));
 			}
+		}
+
+		#[test]
+		fn from_axial_coords() {
+			assert_eq!(OffsetCoords::new(-2, -2), AxialCoords::new(-1, -2).into());
+			assert_eq!(OffsetCoords::new(-1, -2), AxialCoords::new(0, -2).into());
+			assert_eq!(OffsetCoords::new(0, -2), AxialCoords::new(1, -2).into());
+			assert_eq!(OffsetCoords::new(1, -2), AxialCoords::new(2, -2).into());
+			assert_eq!(OffsetCoords::new(2, -2), AxialCoords::new(3, -2).into());
+
+			assert_eq!(OffsetCoords::new(-2, -1), AxialCoords::new(-1, -1).into());
+			assert_eq!(OffsetCoords::new(-1, -1), AxialCoords::new(0, -1).into());
+			assert_eq!(OffsetCoords::new(0, -1), AxialCoords::new(1, -1).into());
+			assert_eq!(OffsetCoords::new(1, -1), AxialCoords::new(2, -1).into());
+			assert_eq!(OffsetCoords::new(2, -1), AxialCoords::new(3, -1).into());
+
+			assert_eq!(OffsetCoords::new(-2, 0), AxialCoords::new(-2, 0).into());
+			assert_eq!(OffsetCoords::new(-1, 0), AxialCoords::new(-1, 0).into());
+			assert_eq!(OffsetCoords::new(0, 0), AxialCoords::new(0, 0).into());
+			assert_eq!(OffsetCoords::new(1, 0), AxialCoords::new(1, 0).into());
+			assert_eq!(OffsetCoords::new(2, 0), AxialCoords::new(2, 0).into());
+
+			assert_eq!(OffsetCoords::new(-2, 1), AxialCoords::new(-2, 1).into());
+			assert_eq!(OffsetCoords::new(-1, 1), AxialCoords::new(-1, 1).into());
+			assert_eq!(OffsetCoords::new(0, 1), AxialCoords::new(0, 1).into());
+			assert_eq!(OffsetCoords::new(1, 1), AxialCoords::new(1, 1).into());
+			assert_eq!(OffsetCoords::new(2, 1), AxialCoords::new(2, 1).into());
+
+			assert_eq!(OffsetCoords::new(-2, 2), AxialCoords::new(-3, 2).into());
+			assert_eq!(OffsetCoords::new(-1, 2), AxialCoords::new(-2, 2).into());
+			assert_eq!(OffsetCoords::new(0, 2), AxialCoords::new(-1, 2).into());
+			assert_eq!(OffsetCoords::new(1, 2), AxialCoords::new(0, 2).into());
+			assert_eq!(OffsetCoords::new(2, 2), AxialCoords::new(1, 2).into());
+		}
+
+		#[test]
+		fn from_cube_coords() {
+			assert_eq!(OffsetCoords::new(-2, -2), CubeCoords::new(-1, -2, 3).into());
+			assert_eq!(OffsetCoords::new(-1, -2), CubeCoords::new(0, -2, 2).into());
+			assert_eq!(OffsetCoords::new(0, -2), CubeCoords::new(1, -2, 1).into());
+			assert_eq!(OffsetCoords::new(1, -2), CubeCoords::new(2, -2, 0).into());
+			assert_eq!(OffsetCoords::new(2, -2), CubeCoords::new(3, -2, -1).into());
+
+			assert_eq!(OffsetCoords::new(-2, -1), CubeCoords::new(-1, -1, 2).into());
+			assert_eq!(OffsetCoords::new(-1, -1), CubeCoords::new(0, -1, 1).into());
+			assert_eq!(OffsetCoords::new(0, -1), CubeCoords::new(1, -1, 0).into());
+			assert_eq!(OffsetCoords::new(1, -1), CubeCoords::new(2, -1, -1).into());
+			assert_eq!(OffsetCoords::new(2, -1), CubeCoords::new(3, -1, -2).into());
+
+			assert_eq!(OffsetCoords::new(-2, 0), CubeCoords::new(-2, 0, 2).into());
+			assert_eq!(OffsetCoords::new(-1, 0), CubeCoords::new(-1, 0, 1).into());
+			assert_eq!(OffsetCoords::new(0, 0), CubeCoords::new(0, 0, 0).into());
+			assert_eq!(OffsetCoords::new(1, 0), CubeCoords::new(1, 0, -1).into());
+			assert_eq!(OffsetCoords::new(2, 0), CubeCoords::new(2, 0, -2).into());
+
+			assert_eq!(OffsetCoords::new(-2, 1), CubeCoords::new(-2, 1, 1).into());
+			assert_eq!(OffsetCoords::new(-1, 1), CubeCoords::new(-1, 1, 0).into());
+			assert_eq!(OffsetCoords::new(0, 1), CubeCoords::new(0, 1, -1).into());
+			assert_eq!(OffsetCoords::new(1, 1), CubeCoords::new(1, 1, -2).into());
+			assert_eq!(OffsetCoords::new(2, 1), CubeCoords::new(2, 1, -3).into());
+
+			assert_eq!(OffsetCoords::new(-2, 2), CubeCoords::new(-3, 2, 1).into());
+			assert_eq!(OffsetCoords::new(-1, 2), CubeCoords::new(-2, 2, 0).into());
+			assert_eq!(OffsetCoords::new(0, 2), CubeCoords::new(-1, 2, -1).into());
+			assert_eq!(OffsetCoords::new(1, 2), CubeCoords::new(0, 2, -2).into());
+			assert_eq!(OffsetCoords::new(2, 2), CubeCoords::new(1, 2, -3).into());
+		}
+
+		#[test]
+		#[ignore]
+		fn from_doubled_coords() {
+			assert_eq!(OffsetCoords::new(0, 0), DoubledCoords::new(0, 0).into());
 		}
 	}
 }
