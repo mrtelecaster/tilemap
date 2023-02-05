@@ -1,6 +1,6 @@
 //! Axial hex coordinates. More space efficient than cube but math is a bit of a pain.
 
-use std::{fmt::Debug, ops::{Add, BitAnd, Neg, Sub, Div}};
+use std::{fmt::Debug, ops::{Add, BitAnd, Div, Neg, Sub}};
 use crate::{traits::TileCoords, hex::{CubeCoords, DoubledCoords, OffsetCoords}};
 
 
@@ -77,11 +77,13 @@ impl<T> From<CubeCoords<T>> for AxialCoords<T> {
     }
 }
 
-impl<T> From<DoubledCoords<T>> for AxialCoords<T> {
+impl<T> From<DoubledCoords<T>> for AxialCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T>
+{
 	/// Creates a new axial coordinate pair from the given doubled coordinates [as described in the
 	/// article](https://www.redblobgames.com/grids/hexagons/#conversions-doubled)
-    fn from(_: DoubledCoords<T>) -> Self {
-        todo!()
+    fn from(c: DoubledCoords<T>) -> Self {
+        Self::from(OffsetCoords::from(c))
     }
 }
 

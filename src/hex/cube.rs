@@ -1,9 +1,9 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
-use std::{fmt::Debug, hash::Hash, ops::{Add, Neg, Sub, BitAnd, Div}};
+use std::{fmt::Debug, hash::Hash, ops::{Add, BitAnd, Div, Neg, Sub}};
 use crate::{
 	traits::TileCoords,
-	hex::{axial::AxialCoords, doubled::DoubledCoords, offset::OffsetCoords},
+	hex::{AxialCoords, DoubledCoords, OffsetCoords},
 };
 
 
@@ -118,13 +118,17 @@ impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + S
     }
 }
 
-impl<T> From<DoubledCoords<T>> for CubeCoords<T> {
-    fn from(_: DoubledCoords<T>) -> Self {
-        todo!()
+impl<T> From<DoubledCoords<T>> for CubeCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T>
+{
+    fn from(c: DoubledCoords<T>) -> Self {
+        Self::from(OffsetCoords::from(c))
     }
 }
 
-impl<T> From<OffsetCoords<T>> for CubeCoords<T> where T: BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+impl<T> From<OffsetCoords<T>> for CubeCoords<T>
+where T: BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T>
+{
 	/// Creates a new cube coordinate set from the given offset coordinates, [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: OffsetCoords<T>) -> Self {
         Self::from(AxialCoords::from(c))

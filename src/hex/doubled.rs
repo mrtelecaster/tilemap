@@ -1,7 +1,7 @@
 //! Doubled hex coordinates. Method for making pseudo-rectangular maps that's a bit more
 //! mathematically elegant than the [Offset coordinate system](crate::hex::offset)
 
-use std::{fmt::Debug, ops::{Add, Mul}};
+use std::{fmt::Debug, ops::{Add, BitAnd, Div, Mul, Neg, Sub}};
 
 use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, OffsetCoords}};
 
@@ -87,9 +87,10 @@ impl<T> From<CubeCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy +
     }
 }
 
-impl<T> From<OffsetCoords<T>> for DoubledCoords<T> {
-    fn from(_: OffsetCoords<T>) -> Self {
-        todo!()
+impl<T> From<OffsetCoords<T>> for DoubledCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Mul<Output=T> + Neg<Output=T> + Sub<Output=T> {
+    fn from(c: OffsetCoords<T>) -> Self {
+        Self::from(AxialCoords::from(c))
     }
 }
 

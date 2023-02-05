@@ -92,9 +92,11 @@ where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> +
     }
 }
 
-impl<T> From<DoubledCoords<T>> for OffsetCoords<T> {
-    fn from(_: DoubledCoords<T>) -> Self {
-        todo!()
+impl<T> From<DoubledCoords<T>> for OffsetCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T>
+{
+    fn from(c: DoubledCoords<T>) -> Self {
+        Self::from(AxialCoords::from(c))
     }
 }
 
@@ -207,6 +209,7 @@ mod tests {
 		#[ignore]
 		fn from_doubled_coords() {
 			assert_eq!(OffsetCoords::new(0, 0), DoubledCoords::new(0, 0).into());
+			todo!()
 		}
 	}
 }
