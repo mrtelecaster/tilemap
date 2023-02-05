@@ -1,7 +1,7 @@
 //! Doubled hex coordinates. Method for making pseudo-rectangular maps that's a bit more
 //! mathematically elegant than the [Offset coordinate system](crate::hex::offset)
 
-use std::{fmt::Debug, ops::Add};
+use std::{fmt::Debug, ops::{Add, Mul}};
 
 use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, OffsetCoords}};
 
@@ -73,17 +73,17 @@ impl<T> Add<DoubledCoords<T>> for &DoubledCoords<T> where T: Add<Output=T> + Cop
 	}
 }
 
-impl<T> From<AxialCoords<T>> for DoubledCoords<T> {
+impl<T> From<AxialCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> + Mul<Output=T> {
 	/// Creates a new doubled coordinate pair from the given axial coordinates, [as described in
 	/// the article](https://www.redblobgames.com/grids/hexagons/#conversions-doubled)
-    fn from(_: AxialCoords<T>) -> Self {
-        todo!()
+    fn from(c: AxialCoords<T>) -> Self {
+        Self{ q: c.q * 2.into() + c.r, r: c.r }
     }
 }
 
-impl<T> From<CubeCoords<T>> for DoubledCoords<T> {
-    fn from(_: CubeCoords<T>) -> Self {
-        todo!()
+impl<T> From<CubeCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> + Mul<Output=T> {
+    fn from(c: CubeCoords<T>) -> Self {
+        Self::from(AxialCoords::from(c))
     }
 }
 
@@ -133,27 +133,25 @@ mod tests {
 		}
 
 		#[test]
-		#[ignore]
 		fn from_axial_coords() {
 			assert_eq!(DoubledCoords::new(0, 0), AxialCoords::new(0, 0).into());
 			assert_eq!(DoubledCoords::new(2, 0), AxialCoords::new(1, 0).into());
-			assert_eq!(DoubledCoords::new(1, 1), AxialCoords::new(0, 1).into());
 			assert_eq!(DoubledCoords::new(4, 0), AxialCoords::new(2, 0).into());
+			assert_eq!(DoubledCoords::new(1, 1), AxialCoords::new(0, 1).into());
 			assert_eq!(DoubledCoords::new(3, 1), AxialCoords::new(1, 1).into());
+			assert_eq!(DoubledCoords::new(0, 2), AxialCoords::new(-1, 2).into());
 			assert_eq!(DoubledCoords::new(2, 2), AxialCoords::new(0, 2).into());
-			assert_eq!(DoubledCoords::new(1, 2), AxialCoords::new(0, 2).into());
 		}
 
 		#[test]
-		#[ignore]
 		fn from_cube_coords() {
 			assert_eq!(DoubledCoords::new(0, 0), CubeCoords::new(0, 0, 0).into());
-			assert_eq!(DoubledCoords::new(1, 0), CubeCoords::new(1, 0, -1).into());
-			assert_eq!(DoubledCoords::new(0, 1), CubeCoords::new(0, 1, -1).into());
+			assert_eq!(DoubledCoords::new(2, 0), CubeCoords::new(1, 0, -1).into());
+			assert_eq!(DoubledCoords::new(4, 0), CubeCoords::new(2, 0, -2).into());
+			assert_eq!(DoubledCoords::new(1, 1), CubeCoords::new(0, 1, -1).into());
+			assert_eq!(DoubledCoords::new(3, 1), CubeCoords::new(1, 1, -2).into());
 			assert_eq!(DoubledCoords::new(0, 2), CubeCoords::new(-1, 2, -1).into());
-			assert_eq!(DoubledCoords::new(2, 0), CubeCoords::new(2, 0, -2).into());
-			assert_eq!(DoubledCoords::new(1, 1), CubeCoords::new(1, 1, -2).into());
-			assert_eq!(DoubledCoords::new(1, 2), CubeCoords::new(0, 2, -2).into());
+			assert_eq!(DoubledCoords::new(2, 2), CubeCoords::new(0, 2, -2).into());
 		}
 
 		#[test]

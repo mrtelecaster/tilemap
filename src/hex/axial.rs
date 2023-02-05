@@ -1,7 +1,6 @@
 //! Axial hex coordinates. More space efficient than cube but math is a bit of a pain.
 
 use std::{fmt::Debug, ops::{Add, BitAnd, Neg, Sub, Div}};
-
 use crate::{traits::TileCoords, hex::{CubeCoords, DoubledCoords, OffsetCoords}};
 
 
