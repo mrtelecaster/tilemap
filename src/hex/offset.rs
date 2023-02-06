@@ -48,6 +48,9 @@ impl<T> TileCoords for OffsetCoords<T> where T: Add<Output=T> + Copy + Debug + F
     }
 }
 
+
+// STD OPS IMPLEMENTATIONS ---------------------------------------------------------------------- //
+
 impl<T> Add for OffsetCoords<T> where T: Add<Output=T> + Copy {
 
     type Output = Self;
@@ -71,6 +74,20 @@ impl<T> Add<OffsetCoords<T>> for &OffsetCoords<T> where T: Add<Output=T> + Copy 
 		}
 	}
 }
+
+impl<T> Sub for OffsetCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+
+	type Output = Self;
+
+	fn sub(self, rhs: Self) -> Self::Output {
+		let cube: CubeCoords<T> = CubeCoords::from(self) - CubeCoords::from(rhs);
+		OffsetCoords::from(cube)
+	}
+}
+
+
+// `FROM` IMPLEMENTATIONS ----------------------------------------------------------------------- //
 
 impl<T> From<AxialCoords<T>> for OffsetCoords<T>
 where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
@@ -99,6 +116,8 @@ where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> +
         Self::from(AxialCoords::from(c))
     }
 }
+
+
 
 #[cfg(test)]
 mod tests {
