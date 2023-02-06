@@ -37,6 +37,10 @@ impl<T> CubeCoords<T> {
 	pub fn splat(val: T) -> Self where T: Copy {
 		Self{ q: val, r: val, s: val }
 	}
+
+	pub fn is_valid(&self) -> bool where T: Copy + Neg<Output=T> + PartialEq + Sub<Output=T> {
+		self.s == -self.q - self.r
+	}
 }
 
 impl<T> TileCoords for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + Eq + From<isize> + Hash {
@@ -140,9 +144,21 @@ mod tests {
 
 	use super::*;
 
+	mod methods {
+
+		use super::*;
+
+		#[test]
+		fn is_valid() {
+			assert!(CubeCoords::new(-2, 3, -1).is_valid());
+			assert!(!CubeCoords::new(-2, 3, 0).is_valid());
+			assert!(!CubeCoords::new(-2, 3, -2).is_valid());
+		}
+	}
+
 	mod traits {
 
-use super::*;
+	use super::*;
 
 		mod tile_coords {
 
