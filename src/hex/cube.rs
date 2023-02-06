@@ -1,8 +1,7 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
 use std::{fmt::Debug, ops::{Add, Sub, Neg, BitAnd, Div}};
-use num::NumCast;
-
+use num::{NumCast, Integer};
 use crate::{
 	traits::TileCoords,
 	hex::{AxialCoords, DoubledCoords, OffsetCoords},
@@ -45,6 +44,9 @@ impl<T> CubeCoords<T> {
 	}
 }
 
+
+// TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------- //
+
 impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq {
 
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
@@ -59,6 +61,10 @@ impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + 
 			self + CubeCoords::new(neg_one, zero, one),
 			self + CubeCoords::new(zero, neg_one, one),
 		]
+    }
+
+    fn distance<D>(&self, other: &Self) -> D where D: Integer {
+        todo!()
     }
 }
 

@@ -2,9 +2,7 @@
 //! mathematically elegant than the [Offset coordinate system](crate::hex::offset)
 
 use std::{fmt::Debug, ops::{Add, BitAnd, Div, Mul, Neg, Sub}};
-
-use num::NumCast;
-
+use num::{NumCast, Integer};
 use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, OffsetCoords}};
 
 
@@ -38,7 +36,12 @@ impl<T> DoubledCoords<T> {
 	}
 }
 
-impl<T> TileCoords<T> for DoubledCoords<T> where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq {
+
+// TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------- //
+
+impl<T> TileCoords<T> for DoubledCoords<T>
+where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq
+{
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
 		let neg_two: T = NumCast::from(-2).unwrap();
 		let neg_one: T = NumCast::from(-1).unwrap();
@@ -53,6 +56,10 @@ impl<T> TileCoords<T> for DoubledCoords<T> where T: Add<Output=T> + Copy + Debug
 			self + DoubledCoords::new(neg_one, one),
 			self + DoubledCoords::new(neg_two, zero),
 		]
+    }
+
+    fn distance<D>(&self, other: &Self) -> D where D: Integer {
+        todo!()
     }
 }
 

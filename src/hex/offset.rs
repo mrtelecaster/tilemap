@@ -1,7 +1,7 @@
 //! Offset hex coordinates. Simple method for making pseudo-rectangular maps
 
 use std::{fmt::Debug, ops::{Add, BitAnd, Div, Neg, Sub}};
-use num::NumCast;
+use num::{NumCast, Integer};
 use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, DoubledCoords}};
 
 
@@ -35,6 +35,9 @@ impl<T> OffsetCoords<T> {
 	}
 }
 
+
+/// TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------ //
+
 impl<T> TileCoords<T> for OffsetCoords<T>
 where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq
 {
@@ -50,6 +53,10 @@ where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq
 			self + OffsetCoords::new(neg_one, one),
 			self + OffsetCoords::new(neg_one, zero),
 		]
+    }
+
+    fn distance<D>(&self, other: &Self) -> D where D: Integer {
+        todo!()
     }
 }
 
@@ -123,6 +130,7 @@ where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub
 }
 
 
+// UNIT TESTS ----------------------------------------------------------------------------------- //
 
 #[cfg(test)]
 mod tests {

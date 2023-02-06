@@ -2,7 +2,6 @@
 
 use std::{fmt::Debug, ops::{Add, Sub, BitAnd, Div, Neg}};
 use num::{Integer, NumCast};
-
 use crate::{traits::TileCoords, hex::{CubeCoords, DoubledCoords, OffsetCoords}};
 
 
@@ -33,6 +32,9 @@ impl<T> AxialCoords<T> {
 	}
 }
 
+
+// TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------- //
+
 impl<T> TileCoords<T> for AxialCoords<T> where T: Copy + Debug + Integer + NumCast {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
 		let one: T = NumCast::from(1).unwrap();
@@ -46,6 +48,10 @@ impl<T> TileCoords<T> for AxialCoords<T> where T: Copy + Debug + Integer + NumCa
 			self + AxialCoords::new(zero, neg_one),
 			self + AxialCoords::new(one, neg_one),
 		]
+    }
+
+    fn distance<D>(&self, other: &Self) -> D where D: Integer {
+        todo!()
     }
 }
 
