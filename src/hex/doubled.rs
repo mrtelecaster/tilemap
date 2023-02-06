@@ -49,6 +49,9 @@ impl<T> TileCoords for DoubledCoords<T> where T: Add<Output=T> + Copy + Debug + 
     }
 }
 
+
+// STD OPS IMPLEMENTATIONS ---------------------------------------------------------------------- //
+
 impl<T> Add for DoubledCoords<T> where T: Add<Output=T> + Copy {
 
     type Output = Self;
@@ -72,6 +75,18 @@ impl<T> Add<DoubledCoords<T>> for &DoubledCoords<T> where T: Add<Output=T> + Cop
 		}
 	}
 }
+
+impl<T> Sub for DoubledCoords<T> where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Mul<Output=T> + Neg<Output=T> + Sub<Output=T> {
+
+	type Output = DoubledCoords<T>;
+
+	fn sub(self, rhs: Self) -> Self::Output {
+		Self::from(CubeCoords::from(self) - CubeCoords::from(rhs))
+	}
+}
+
+
+// `FROM` IMPLEMENTATIONS ----------------------------------------------------------------------- //
 
 impl<T> From<AxialCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> + Mul<Output=T> {
 	/// Creates a new doubled coordinate pair from the given axial coordinates, [as described in

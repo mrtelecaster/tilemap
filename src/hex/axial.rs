@@ -44,6 +44,9 @@ impl<T> TileCoords for AxialCoords<T> where T: Add<Output=T> + Copy + Debug + Fr
     }
 }
 
+
+// STD OPS IMPLEMENTATIONS ---------------------------------------------------------------------- //
+
 impl<T> Add for AxialCoords<T> where T: Add<Output=T> + Copy {
 
     type Output = Self;
@@ -67,6 +70,19 @@ impl<T> Add<AxialCoords<T>> for &AxialCoords<T> where T: Add<Output=T> + Copy {
 		}
 	}
 }
+
+impl<T> Sub for AxialCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T> {
+
+	type Output = Self;
+
+	fn sub(self, rhs: Self) -> Self::Output {
+		Self::from(CubeCoords::from(self) - CubeCoords::from(rhs))
+	}
+}
+
+
+
+// `FROM` TRAIT --------------------------------------------------------------------------------- //
 
 impl<T> From<CubeCoords<T>> for AxialCoords<T> {
 
