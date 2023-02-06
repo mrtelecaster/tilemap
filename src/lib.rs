@@ -11,4 +11,3 @@
 
 pub mod traits;
 pub mod hex;
-pub mod square;

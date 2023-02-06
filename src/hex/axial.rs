@@ -1,6 +1,8 @@
 //! Axial hex coordinates. More space efficient than cube but math is a bit of a pain.
 
-use std::{fmt::Debug, ops::{Add, BitAnd, Div, Neg, Sub}};
+use std::{fmt::Debug, ops::{Add, Sub, BitAnd, Div, Neg}};
+use num::{Integer, NumCast};
+
 use crate::{traits::TileCoords, hex::{CubeCoords, DoubledCoords, OffsetCoords}};
 
 
@@ -31,15 +33,18 @@ impl<T> AxialCoords<T> {
 	}
 }
 
-impl<T> TileCoords for AxialCoords<T> where T: Add<Output=T> + Copy + Debug + From<isize> + PartialEq {
+impl<T> TileCoords<T> for AxialCoords<T> where T: Copy + Debug + Integer + NumCast {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
+		let one: T = NumCast::from(1).unwrap();
+		let zero: T = NumCast::from(0).unwrap();
+		let neg_one: T = NumCast::from(-1).unwrap();
         vec![
-			self + AxialCoords::new(1.into(), 0.into()),
-			self + AxialCoords::new(0.into(), 1.into()),
-			self + AxialCoords::new((-1).into(), 1.into()),
-			self + AxialCoords::new((-1).into(), 0.into()),
-			self + AxialCoords::new(0.into(), (-1).into()),
-			self + AxialCoords::new(1.into(), (-1).into()),
+			self + AxialCoords::new(one, zero),
+			self + AxialCoords::new(zero, one),
+			self + AxialCoords::new(neg_one, one),
+			self + AxialCoords::new(neg_one, zero),
+			self + AxialCoords::new(zero, neg_one),
+			self + AxialCoords::new(one, neg_one),
 		]
     }
 }
@@ -47,7 +52,7 @@ impl<T> TileCoords for AxialCoords<T> where T: Add<Output=T> + Copy + Debug + Fr
 
 // STD OPS IMPLEMENTATIONS ---------------------------------------------------------------------- //
 
-impl<T> Add for AxialCoords<T> where T: Add<Output=T> + Copy {
+impl<T> Add for AxialCoords<T> where T: Add<Output=T> {
 
     type Output = Self;
 
@@ -84,8 +89,8 @@ impl<T> Sub for AxialCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T> {
 
 // `FROM` TRAIT --------------------------------------------------------------------------------- //
 
-impl<T> From<CubeCoords<T>> for AxialCoords<T> {
-
+impl<T> From<CubeCoords<T>> for AxialCoords<T>
+{
 	/// Creates a new axial coordinate from the given cube coordinate [as described here]
 	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
     fn from(c: CubeCoords<T>) -> Self {
@@ -94,7 +99,7 @@ impl<T> From<CubeCoords<T>> for AxialCoords<T> {
 }
 
 impl<T> From<DoubledCoords<T>> for AxialCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub<Output=T>
 {
 	/// Creates a new axial coordinate pair from the given doubled coordinates [as described in the
 	/// article](https://www.redblobgames.com/grids/hexagons/#conversions-doubled)
@@ -103,11 +108,15 @@ where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> +
     }
 }
 
-impl<T> From<OffsetCoords<T>> for AxialCoords<T> where T: BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+impl<T> From<OffsetCoords<T>> for AxialCoords<T>
+where T: BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub<Output=T>
+{
 	/// Creates a new axial coordinate pair from the given set of offset coordinates [as described
 	/// in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: OffsetCoords<T>) -> Self {
-        let q = c.q - (c.r - (c.r & 1.into())) / 2.into();
+		let one = NumCast::from(1).unwrap();
+		let two = NumCast::from(2).unwrap();
+        let q = c.q - (c.r - (c.r & one)) / two;
 		let r = c.r;
 		Self{ q, r }
     }
