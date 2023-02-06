@@ -1,7 +1,7 @@
 //! Offset hex coordinates. Simple method for making pseudo-rectangular maps
 
 use std::{fmt::Debug, ops::{Add, BitAnd, Div, Neg, Sub}};
-
+use num::NumCast;
 use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, DoubledCoords}};
 
 
@@ -35,15 +35,20 @@ impl<T> OffsetCoords<T> {
 	}
 }
 
-impl<T> TileCoords for OffsetCoords<T> where T: Add<Output=T> + Copy + Debug + From<isize> + PartialEq {
-    fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
+impl<T> TileCoords<T> for OffsetCoords<T>
+where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq
+{
+    fn adjacent_coords(&self) -> Vec<Self> {
+		let neg_one: T = NumCast::from(-1).unwrap();
+		let zero: T = NumCast::from(0).unwrap();
+		let one: T = NumCast::from(1).unwrap();
         vec![
-			self + OffsetCoords::new((-1).into(), (-1).into()),
-			self + OffsetCoords::new(0.into(), (-1).into()),
-			self + OffsetCoords::new(1.into(), 0.into()),
-			self + OffsetCoords::new(0.into(), 1.into()),
-			self + OffsetCoords::new((-1).into(), 1.into()),
-			self + OffsetCoords::new((-1).into(), 0.into()),
+			self + OffsetCoords::new(neg_one, neg_one),
+			self + OffsetCoords::new(zero, neg_one),
+			self + OffsetCoords::new(one, zero),
+			self + OffsetCoords::new(zero, one),
+			self + OffsetCoords::new(neg_one, one),
+			self + OffsetCoords::new(neg_one, zero),
 		]
     }
 }
@@ -51,7 +56,7 @@ impl<T> TileCoords for OffsetCoords<T> where T: Add<Output=T> + Copy + Debug + F
 
 // STD OPS IMPLEMENTATIONS ---------------------------------------------------------------------- //
 
-impl<T> Add for OffsetCoords<T> where T: Add<Output=T> + Copy {
+impl<T> Add for OffsetCoords<T> where T: Add<Output=T> {
 
     type Output = Self;
 
@@ -75,8 +80,7 @@ impl<T> Add<OffsetCoords<T>> for &OffsetCoords<T> where T: Add<Output=T> + Copy 
 	}
 }
 
-impl<T> Sub for OffsetCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+impl<T> Sub for OffsetCoords<T> where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + Neg<Output=T> + NumCast + Sub<Output=T> {
 
 	type Output = Self;
 
@@ -89,19 +93,20 @@ where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> +
 
 // `FROM` IMPLEMENTATIONS ----------------------------------------------------------------------- //
 
-impl<T> From<AxialCoords<T>> for OffsetCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+impl<T> From<AxialCoords<T>> for OffsetCoords<T> where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub<Output=T> {
 	/// Creates a new offset coordinate pair from the given axial coordinates, [as described in the
 	/// article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: AxialCoords<T>) -> Self {
-        let q = c.q + (c.r - (c.r & 1.into())) / 2.into();
+		let one: T = NumCast::from(1).unwrap();
+		let two: T = NumCast::from(2).unwrap();
+        let q = c.q + (c.r - (c.r & one)) / two;
 		let r = c.r;
 		Self{ q, r }
     }
 }
 
 impl<T> From<CubeCoords<T>> for OffsetCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T> {
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub<Output=T> {
 	/// Creates a new offset coordinate pair from the given cube coordinate set, [as described in
 	/// the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: CubeCoords<T>) -> Self {
@@ -110,7 +115,7 @@ where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> +
 }
 
 impl<T> From<DoubledCoords<T>> for OffsetCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> + Sub<Output=T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub<Output=T>
 {
     fn from(c: DoubledCoords<T>) -> Self {
         Self::from(AxialCoords::from(c))

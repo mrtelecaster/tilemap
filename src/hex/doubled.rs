@@ -3,6 +3,8 @@
 
 use std::{fmt::Debug, ops::{Add, BitAnd, Div, Mul, Neg, Sub}};
 
+use num::NumCast;
+
 use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, OffsetCoords}};
 
 
@@ -36,15 +38,20 @@ impl<T> DoubledCoords<T> {
 	}
 }
 
-impl<T> TileCoords for DoubledCoords<T> where T: Add<Output=T> + Copy + Debug + From<isize> + PartialEq {
+impl<T> TileCoords<T> for DoubledCoords<T> where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
+		let neg_two: T = NumCast::from(-2).unwrap();
+		let neg_one: T = NumCast::from(-1).unwrap();
+		let zero: T = NumCast::from(0).unwrap();
+		let one: T = NumCast::from(1).unwrap();
+		let two: T = NumCast::from(2).unwrap();
         vec![
-			self + DoubledCoords::new((-1).into(), (-1).into()),
-			self + DoubledCoords::new(1.into(), (-1).into()),
-			self + DoubledCoords::new(2.into(), 0.into()),
-			self + DoubledCoords::new(1.into(), 1.into()),
-			self + DoubledCoords::new((-1).into(), 1.into()),
-			self + DoubledCoords::new((-2).into(), 0.into()),
+			self + DoubledCoords::new(neg_one, neg_one),
+			self + DoubledCoords::new(one, neg_one),
+			self + DoubledCoords::new(two, zero),
+			self + DoubledCoords::new(one, one),
+			self + DoubledCoords::new(neg_one, one),
+			self + DoubledCoords::new(neg_two, zero),
 		]
     }
 }
@@ -52,7 +59,7 @@ impl<T> TileCoords for DoubledCoords<T> where T: Add<Output=T> + Copy + Debug + 
 
 // STD OPS IMPLEMENTATIONS ---------------------------------------------------------------------- //
 
-impl<T> Add for DoubledCoords<T> where T: Add<Output=T> + Copy {
+impl<T> Add for DoubledCoords<T> where T: Add<Output=T> {
 
     type Output = Self;
 
@@ -76,34 +83,38 @@ impl<T> Add<DoubledCoords<T>> for &DoubledCoords<T> where T: Add<Output=T> + Cop
 	}
 }
 
-impl<T> Sub for DoubledCoords<T> where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Mul<Output=T> + Neg<Output=T> + Sub<Output=T> {
-
+impl<T> Sub for DoubledCoords<T>
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + Mul<Output=T> + Neg<Output=T> + NumCast + Sub<Output=T>
+{
 	type Output = DoubledCoords<T>;
 
-	fn sub(self, rhs: Self) -> Self::Output {
-		Self::from(CubeCoords::from(self) - CubeCoords::from(rhs))
+	fn sub(self, rhs: DoubledCoords<T>) -> Self::Output {
+		let lhs_cube = CubeCoords::from(self);
+		let rhs_cube = CubeCoords::from(rhs);
+		let result_cube = lhs_cube - rhs_cube;
+		DoubledCoords::from(result_cube)
 	}
 }
 
 
 // `FROM` IMPLEMENTATIONS ----------------------------------------------------------------------- //
 
-impl<T> From<AxialCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> + Mul<Output=T> {
+impl<T> From<AxialCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy + Mul<Output=T> + NumCast {
 	/// Creates a new doubled coordinate pair from the given axial coordinates, [as described in
 	/// the article](https://www.redblobgames.com/grids/hexagons/#conversions-doubled)
     fn from(c: AxialCoords<T>) -> Self {
-        Self{ q: c.q * 2.into() + c.r, r: c.r }
+		let two: T = NumCast::from(2).unwrap();
+        Self{ q: c.q * two + c.r, r: c.r }
     }
 }
 
-impl<T> From<CubeCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy + From<isize> + Mul<Output=T> {
+impl<T> From<CubeCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + Copy + Mul<Output=T> + NumCast {
     fn from(c: CubeCoords<T>) -> Self {
         Self::from(AxialCoords::from(c))
     }
 }
 
-impl<T> From<OffsetCoords<T>> for DoubledCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Mul<Output=T> + Neg<Output=T> + Sub<Output=T> {
+impl<T> From<OffsetCoords<T>> for DoubledCoords<T> where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + Mul<Output=T> + NumCast + Sub<Output=T> {
     fn from(c: OffsetCoords<T>) -> Self {
         Self::from(AxialCoords::from(c))
     }
