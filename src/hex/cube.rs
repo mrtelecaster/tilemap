@@ -135,6 +135,17 @@ where T: BitAnd<Output=T> + Copy + Div<Output=T> + From<isize> + Neg<Output=T> +
     }
 }
 
+impl<T> Sub for CubeCoords<T> where T: Sub<Output=T> {
+
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self{ q: self.q - rhs.q, r: self.r - rhs.r, s: self.s - rhs.s }
+    }
+}
+
+
+
 #[cfg(test)]
 mod tests {
 
@@ -142,7 +153,7 @@ mod tests {
 
 	mod traits {
 
-use super::*;
+	use super::*;
 
 		mod tile_coords {
 
@@ -236,6 +247,13 @@ use super::*;
 			assert_eq!(CubeCoords::new(-1, 2, -1), OffsetCoords::new(0, 2).into());
 			assert_eq!(CubeCoords::new(0, 2, -2), OffsetCoords::new(1, 2).into());
 			assert_eq!(CubeCoords::new(1, 2, -3), OffsetCoords::new(2, 2).into());
+		}
+	
+		#[test]
+		fn sub() {
+			assert_eq!(CubeCoords::new(0, -1, 1), CubeCoords::new(0, -3, 3) - CubeCoords::new(0, -2, 2));
+			assert_eq!(CubeCoords::new(0, 1, -1), CubeCoords::new(0, -2, 2) - CubeCoords::new(0, -3, 3));
+			assert_eq!(CubeCoords::new(3, -2, -1), CubeCoords::new(1, 1, -2) - CubeCoords::new(-2, 3, -1));
 		}
 	}
 }
