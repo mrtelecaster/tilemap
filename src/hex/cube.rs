@@ -1,7 +1,6 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
-use std::{fmt::Debug, ops::{Add, Sub, Neg, BitAnd, Div}};
-use num::{NumCast, Integer, Signed, traits::real::Real};
+use std::{fmt::Debug, ops::{Add, Sub}};
 use crate::{
 	traits::TileCoords,
 	hex::{AxialCoords, OffsetCoords},
@@ -15,16 +14,16 @@ use super::util::cube_round;
 
 /// Cube coordinate set
 #[derive(Debug, PartialEq)]
-pub struct CubeCoords<T> {
-	pub q: T,
-	pub r: T,
-	pub s: T,
+pub struct CubeCoords {
+	pub q: isize,
+	pub r: isize,
+	pub s: isize,
 }
 
-impl<T> CubeCoords<T> {
+impl CubeCoords {
 
 	/// Initialize a new cube coordinate set with the given coordinates
-	pub fn new(q: T, r: T, s: T) -> Self {
+	pub fn new(q: isize, r: isize, s: isize) -> Self {
 		Self{ q, r, s }
 	}
 
@@ -37,16 +36,16 @@ impl<T> CubeCoords<T> {
 	/// assert_eq!(3, c.r);
 	/// assert_eq!(3, c.s);
 	/// ```
-	pub fn splat(val: T) -> Self where T: Copy {
+	pub fn splat(val: isize) -> Self {
 		Self{ q: val, r: val, s: val }
 	}
 
-	pub fn from_round<U>(q: U, r: U, s: U) -> Self where T: Copy + Integer + NumCast + Signed, U: Real {
+	pub fn from_round(q: f32, r: f32, s: f32) -> Self {
 		let (int_q, int_r, int_s) = cube_round(q, r, s);
 		Self::new(int_q, int_r, int_s)
 	}
 
-	pub fn is_valid(&self) -> bool where T: Copy + Neg<Output=T> + PartialEq + Sub<Output=T> {
+	pub fn is_valid(&self) -> bool {
 		self.s == -self.q - self.r
 	}
 }
@@ -54,12 +53,12 @@ impl<T> CubeCoords<T> {
 
 // TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------- //
 
-impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + NumCast + Signed {
+impl TileCoords for CubeCoords {
 
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
-		let one: T = NumCast::from(1).unwrap();
-		let zero: T = NumCast::from(0).unwrap();
-		let neg_one: T = NumCast::from(-1).unwrap();
+		let one = 1;
+		let zero = 0;
+		let neg_one = -1;
         vec![
 			self + CubeCoords::new(one, neg_one, zero),
 			self + CubeCoords::new(one, zero, neg_one),
@@ -70,12 +69,12 @@ impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + 
 		]
     }
 
-    fn distance<D>(&self, other: &Self) -> D where D: Integer + From<T> {
+    fn distance(&self, other: &Self) -> isize {
         let vec = self - other;
 		let q = vec.q.abs();
 		let r = vec.r.abs();
 		let s = vec.s.abs();
-		let two: T = NumCast::from(2).unwrap();
+		let two = 2;
 		((q + r + s) / two).into()
     }
 }
@@ -83,7 +82,7 @@ impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + 
 
 // `std::ops` IMPLEMENTATIONS ------------------------------------------------------------------- //
 
-impl<T> Add for CubeCoords<T> where T: Add<Output=T> {
+impl Add for CubeCoords {
 
     type Output = Self;
 
@@ -96,11 +95,11 @@ impl<T> Add for CubeCoords<T> where T: Add<Output=T> {
     }
 }
 
-impl<T> Add<&CubeCoords<T>> for CubeCoords<T> where T: Add<Output=T> + Copy {
+impl Add<&CubeCoords> for CubeCoords {
 
     type Output = Self;
 
-    fn add(self, rhs: &CubeCoords<T>) -> Self::Output {
+    fn add(self, rhs: &CubeCoords) -> Self::Output {
         Self{
 			q: self.q + rhs.q,
 			r: self.r + rhs.r,
@@ -109,11 +108,11 @@ impl<T> Add<&CubeCoords<T>> for CubeCoords<T> where T: Add<Output=T> + Copy {
     }
 }
 
-impl<T> Add<CubeCoords<T>> for &CubeCoords<T> where T: Add<Output=T> + Copy {
+impl Add<CubeCoords> for &CubeCoords {
 
-    type Output = CubeCoords<T>;
+    type Output = CubeCoords;
 
-    fn add(self, rhs: CubeCoords<T>) -> Self::Output {
+    fn add(self, rhs: CubeCoords) -> Self::Output {
         CubeCoords{
 			q: self.q + rhs.q,
 			r: self.r + rhs.r,
@@ -122,11 +121,11 @@ impl<T> Add<CubeCoords<T>> for &CubeCoords<T> where T: Add<Output=T> + Copy {
     }
 }
 
-impl<T> Add<&CubeCoords<T>> for &CubeCoords<T> where T: Add<Output=T> + Copy {
+impl Add<&CubeCoords> for &CubeCoords {
 
-    type Output = CubeCoords<T>;
+    type Output = CubeCoords;
 
-    fn add(self, rhs: &CubeCoords<T>) -> Self::Output {
+    fn add(self, rhs: &CubeCoords) -> Self::Output {
         CubeCoords{
 			q: self.q + rhs.q,
 			r: self.r + rhs.r,
@@ -135,7 +134,7 @@ impl<T> Add<&CubeCoords<T>> for &CubeCoords<T> where T: Add<Output=T> + Copy {
     }
 }
 
-impl<T> Sub for CubeCoords<T> where T: Sub<Output=T> {
+impl Sub for CubeCoords {
 
     type Output = Self;
 
@@ -144,10 +143,10 @@ impl<T> Sub for CubeCoords<T> where T: Sub<Output=T> {
     }
 }
 
-impl<T> Sub<&CubeCoords<T>> for &CubeCoords<T> where T: Copy + Sub<Output=T> {
-	type Output = CubeCoords<T>;
+impl Sub<&CubeCoords> for &CubeCoords {
+	type Output = CubeCoords;
 
-	fn sub(self, rhs: &CubeCoords<T>) -> Self::Output {
+	fn sub(self, rhs: &CubeCoords) -> Self::Output {
 		CubeCoords::new(self.q - rhs.q, self.r - rhs.r, self.s - rhs.s)
 	}
 }
@@ -155,11 +154,11 @@ impl<T> Sub<&CubeCoords<T>> for &CubeCoords<T> where T: Copy + Sub<Output=T> {
 
 // `FROM` IMPLEMENTATIONS ----------------------------------------------------------------------- //
 
-impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T>
+impl From<AxialCoords> for CubeCoords
 {
 	/// Creates a new cube coordinate from the given axial coordinate [as described here]
 	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
-    fn from(c: AxialCoords<T>) -> Self {
+    fn from(c: AxialCoords) -> Self {
         Self{
 			q: c.q,
 			r: c.r,
@@ -168,25 +167,24 @@ impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + S
     }
 }
 
-impl<T> From<&AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T>
+impl From<&AxialCoords> for CubeCoords
 {
-	fn from(c: &AxialCoords<T>) -> Self {
+	fn from(c: &AxialCoords) -> Self {
 		Self::new(c.q, c.r, -c.q - c.r)
 	}
 }
 
-impl<T> From<OffsetCoords<T>> for CubeCoords<T>
-where T: BitAnd<Output=T> + Copy + Div<Output=T> + Neg<Output=T> + NumCast + Sub<Output=T>
+impl From<OffsetCoords> for CubeCoords
 {
 	/// Creates a new cube coordinate set from the given offset coordinates, [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
-    fn from(c: OffsetCoords<T>) -> Self {
+    fn from(c: OffsetCoords) -> Self {
         Self::from(AxialCoords::from(c))
     }
 }
 
-impl<T> From<&OffsetCoords<T>> for CubeCoords<T>
-where T: BitAnd<Output=T> + Copy + Div<Output=T> + Neg<Output=T> + NumCast + Sub<Output=T> {
-	fn from(c: &OffsetCoords<T>) -> Self {
+impl From<&OffsetCoords> for CubeCoords
+{
+	fn from(c: &OffsetCoords) -> Self {
 		Self::from(OffsetCoords::new(c.q, c.r))
 	}
 }
