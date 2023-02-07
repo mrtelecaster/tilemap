@@ -66,6 +66,10 @@ impl TileCoords for OffsetCoords
     fn to_world(&self) -> (f32, f32) {
         AxialCoords::from(self).to_world()
     }
+
+    fn from_world(x: f32, y: f32) -> Self {
+        Self::from(AxialCoords::from_world(x, y))
+    }
 }
 
 

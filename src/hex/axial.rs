@@ -65,6 +65,13 @@ impl TileCoords for AxialCoords {
 		let y = 3.0 / 2.0 * self.r as f32;
         (x, y)
     }
+
+    fn from_world(x: f32, y: f32) -> Self {
+		let sqrt_3 = (3 as f32).sqrt();
+		let q = (sqrt_3 / 3.0 * x - 1.0 / 3.0 * y).round() as isize;
+		let r = (2.0 / 3.0 * y).round() as isize;
+        Self{ q, r }
+    }
 }
 
 
@@ -192,6 +199,20 @@ mod tests {
 				assert_eq!(1, AxialCoords::new(1, -1).distance(&AxialCoords::splat(0)));
 				assert_eq!(2, AxialCoords::new(1, -1).distance(&AxialCoords::new(-1, 0)));
 				assert_eq!(3, AxialCoords::new(2, -1).distance(&AxialCoords::new(-1, 0)));
+			}
+
+			#[test]
+			fn from_world() {
+				let width = (3.0 as f32).sqrt();
+				let height = 2.0;
+
+				assert_eq!(AxialCoords::new(0, 0), AxialCoords::from_world(0.0, 0.0));
+				assert_eq!(AxialCoords::new(1, 0), AxialCoords::from_world(width, 0.0));
+				assert_eq!(AxialCoords::new(0, 1), AxialCoords::from_world(width * 0.5, height * 0.75));
+				assert_eq!(AxialCoords::new(-1, 1), AxialCoords::from_world(width * -0.5, height * 0.75));
+				assert_eq!(AxialCoords::new(-1, 0), AxialCoords::from_world(-width, 0.0));
+				assert_eq!(AxialCoords::new(0, -1), AxialCoords::from_world(width * -0.5, height * -0.75));
+				assert_eq!(AxialCoords::new(1, -1), AxialCoords::from_world(width * 0.5, height * -0.75));
 			}
 
 			#[test]
