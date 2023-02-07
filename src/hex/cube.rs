@@ -1,11 +1,13 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
 use std::{fmt::Debug, ops::{Add, Sub, Neg, BitAnd, Div}};
-use num::{NumCast, Integer, Signed};
+use num::{NumCast, Integer, Signed, traits::real::Real};
 use crate::{
 	traits::TileCoords,
 	hex::{AxialCoords, OffsetCoords},
 };
+
+use super::util::cube_round;
 
 
 
@@ -37,6 +39,11 @@ impl<T> CubeCoords<T> {
 	/// ```
 	pub fn splat(val: T) -> Self where T: Copy {
 		Self{ q: val, r: val, s: val }
+	}
+
+	pub fn from_round<U>(q: U, r: U, s: U) -> Self where T: Copy + Integer + NumCast + Signed, U: Real {
+		let (int_q, int_r, int_s) = cube_round(q, r, s);
+		Self::new(int_q, int_r, int_s)
 	}
 
 	pub fn is_valid(&self) -> bool where T: Copy + Neg<Output=T> + PartialEq + Sub<Output=T> {
@@ -182,7 +189,7 @@ where T: BitAnd<Output=T> + Copy + Div<Output=T> + Neg<Output=T> + NumCast + Sub
 	fn from(c: &OffsetCoords<T>) -> Self {
 		Self::from(OffsetCoords::new(c.q, c.r))
 	}
-} 
+}
 
 
 // UNIT TESTS ----------------------------------------------------------------------------------- //
