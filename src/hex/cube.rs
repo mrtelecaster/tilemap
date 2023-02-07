@@ -1,11 +1,10 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
 use std::{fmt::Debug, ops::{Add, Sub, Neg, BitAnd, Div}};
-use num::NumCast;
-
+use num::{NumCast, Integer, Signed};
 use crate::{
 	traits::TileCoords,
-	hex::{AxialCoords, DoubledCoords, OffsetCoords},
+	hex::{AxialCoords, OffsetCoords},
 };
 
 
@@ -45,7 +44,10 @@ impl<T> CubeCoords<T> {
 	}
 }
 
-impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq {
+
+// TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------- //
+
+impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + NumCast + Signed {
 
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
 		let one: T = NumCast::from(1).unwrap();
@@ -59,6 +61,15 @@ impl<T> TileCoords<T> for CubeCoords<T> where T: Add<Output=T> + Copy + Debug + 
 			self + CubeCoords::new(neg_one, zero, one),
 			self + CubeCoords::new(zero, neg_one, one),
 		]
+    }
+
+    fn distance<D>(&self, other: &Self) -> D where D: Integer + From<T> {
+        let vec = self - other;
+		let q = vec.q.abs();
+		let r = vec.r.abs();
+		let s = vec.s.abs();
+		let two: T = NumCast::from(2).unwrap();
+		((q + r + s) / two).into()
     }
 }
 
@@ -126,11 +137,19 @@ impl<T> Sub for CubeCoords<T> where T: Sub<Output=T> {
     }
 }
 
+impl<T> Sub<&CubeCoords<T>> for &CubeCoords<T> where T: Copy + Sub<Output=T> {
+	type Output = CubeCoords<T>;
+
+	fn sub(self, rhs: &CubeCoords<T>) -> Self::Output {
+		CubeCoords::new(self.q - rhs.q, self.r - rhs.r, self.s - rhs.s)
+	}
+}
+
 
 // `FROM` IMPLEMENTATIONS ----------------------------------------------------------------------- //
 
-impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T> {
-
+impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T>
+{
 	/// Creates a new cube coordinate from the given axial coordinate [as described here]
 	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
     fn from(c: AxialCoords<T>) -> Self {
@@ -142,12 +161,11 @@ impl<T> From<AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + S
     }
 }
 
-impl<T> From<DoubledCoords<T>> for CubeCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + Neg<Output=T> + NumCast + Sub<Output=T>
+impl<T> From<&AxialCoords<T>> for CubeCoords<T> where T: Copy + Neg<Output=T> + Sub<Output=T>
 {
-    fn from(c: DoubledCoords<T>) -> Self {
-        Self::from(OffsetCoords::from(c))
-    }
+	fn from(c: &AxialCoords<T>) -> Self {
+		Self::new(c.q, c.r, -c.q - c.r)
+	}
 }
 
 impl<T> From<OffsetCoords<T>> for CubeCoords<T>
@@ -159,7 +177,15 @@ where T: BitAnd<Output=T> + Copy + Div<Output=T> + Neg<Output=T> + NumCast + Sub
     }
 }
 
+impl<T> From<&OffsetCoords<T>> for CubeCoords<T>
+where T: BitAnd<Output=T> + Copy + Div<Output=T> + Neg<Output=T> + NumCast + Sub<Output=T> {
+	fn from(c: &OffsetCoords<T>) -> Self {
+		Self::from(OffsetCoords::new(c.q, c.r))
+	}
+} 
 
+
+// UNIT TESTS ----------------------------------------------------------------------------------- //
 
 #[cfg(test)]
 mod tests {
@@ -210,6 +236,14 @@ mod tests {
 				assert!(adjacent_coords.contains(&CubeCoords::new(2, -4, 2)));
 				assert!(adjacent_coords.contains(&CubeCoords::new(3, -4, 1)));
 			}
+
+			#[test]
+			fn distance() {
+				assert_eq!(0, CubeCoords::splat(0).distance(&CubeCoords::splat(0)));
+				assert_eq!(1, CubeCoords::new(1, -1, 0).distance(&CubeCoords::splat(0)));
+				assert_eq!(2, CubeCoords::new(1, -1, 0).distance(&CubeCoords::new(-1, 0, 1)));
+				assert_eq!(3, CubeCoords::new(2, -1, -1).distance(&CubeCoords::new(-1, 0, 1)));
+			}
 		}
 
 		#[test]
@@ -235,12 +269,6 @@ mod tests {
 			assert_eq!(CubeCoords::new(-1, -1, 2), AxialCoords::new(-1, -1).into());
 			assert_eq!(CubeCoords::new(0, -2, 2), AxialCoords::new(0, -2).into());
 			assert_eq!(CubeCoords::new(1, -2, 1), AxialCoords::new(1, -2).into());
-		}
-		
-		#[test]
-		#[ignore]
-		fn from_doubled_coords() {
-			assert_eq!(CubeCoords::new(0, 0, 0), DoubledCoords::new(0, 0).into());
 		}
 
 		#[test]
