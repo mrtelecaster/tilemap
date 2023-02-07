@@ -1,6 +1,8 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
 use std::{fmt::Debug, ops::{Add, Sub}};
+use lerp::Lerp;
+
 use crate::{
 	traits::TileCoords,
 	hex::{AxialCoords, OffsetCoords, util::cube_round},
@@ -69,6 +71,20 @@ impl TileCoords for CubeCoords {
 		let r = vec.r.abs();
 		let s = vec.s.abs();
 		(q + r + s) / 2
+    }
+
+    fn line_to(&self, other: &Self) -> Vec<Self> {
+        let distance = self.distance(other);
+		let mut tiles = Vec::new();
+		for n in 0..distance+1 {
+			let t = n as f32 / distance as f32;
+			let q = (self.q as f32).lerp(other.q as f32, t);
+			let r = (self.r as f32).lerp(other.r as f32, t);
+			let s = (self.s as f32).lerp(other.s as f32, t);
+			let coord = CubeCoords::from_round(q, r, s);
+			tiles.push(coord)
+		}
+		tiles
     }
 }
 
@@ -242,6 +258,30 @@ mod tests {
 				assert_eq!(1, CubeCoords::new(1, -1, 0).distance(&CubeCoords::splat(0)));
 				assert_eq!(2, CubeCoords::new(1, -1, 0).distance(&CubeCoords::new(-1, 0, 1)));
 				assert_eq!(3, CubeCoords::new(2, -1, -1).distance(&CubeCoords::new(-1, 0, 1)));
+			}
+
+			#[test]
+			fn line_to() {
+				let start = CubeCoords::new(-5, 0, 5);
+				let end = CubeCoords::new(-1, 2, -1);
+				let line = start.line_to(&end);
+				assert!(line.contains(&CubeCoords::new(-5, 0, 5)));
+				assert!(line.contains(&CubeCoords::new(-4, 0, 4)));
+				assert!(line.contains(&CubeCoords::new(-4, 1, 3)));
+				assert!(line.contains(&CubeCoords::new(-3, 1, 2)));
+				assert!(line.contains(&CubeCoords::new(-2, 1, 1)));
+				assert!(line.contains(&CubeCoords::new(-2, 2, 0)));
+				assert!(line.contains(&CubeCoords::new(-1, 2, -1)));
+				assert_eq!(7, line.len());
+
+				let start = CubeCoords::new(0, 0, 0);
+				let end = CubeCoords::new(1, 0, -1);
+				let line = start.line_to(&end);
+				assert_eq!(2, line.len());
+
+				let start = CubeCoords::new(1, 0, -1);
+				let line = start.line_to(&end);
+				assert_eq!(1, line.len());
 			}
 		}
 
