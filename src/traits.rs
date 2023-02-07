@@ -13,4 +13,6 @@ pub trait TileCoords: Debug + Sized + PartialEq {
 	fn adjacent_coords(&self) -> Vec<Self>;
 
 	fn distance(&self, other: &Self) -> isize;
+
+	fn line_to(&self, other: &Self) -> Vec<Self>;
 }

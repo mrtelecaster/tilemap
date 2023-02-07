@@ -53,6 +53,15 @@ impl TileCoords for OffsetCoords
     fn distance(&self, other: &Self) -> isize {
         CubeCoords::from(self).distance(&CubeCoords::from(other))
     }
+
+    fn line_to(&self, other: &Self) -> Vec<Self> {
+        let cube_coords = CubeCoords::from(self).line_to(&CubeCoords::from(other));
+		let mut tiles = Vec::new();
+		for cube in cube_coords {
+			tiles.push(Self::from(cube));
+		}
+		tiles
+    }
 }
 
 
