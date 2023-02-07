@@ -13,5 +13,5 @@ pub trait TileCoords<T>: Debug + Sized + PartialEq {
 	/// Returns a [`Vec`] of coordinates that are adjacent to this set of coordinates
 	fn adjacent_coords(&self) -> Vec<Self>;
 
-	fn distance<D>(&self, other: &Self) -> D where D: Integer;
+	fn distance<D>(&self, other: &Self) -> D where D: Integer + From<T>;
 }

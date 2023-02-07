@@ -1,8 +1,8 @@
 //! Axial hex coordinates. More space efficient than cube but math is a bit of a pain.
 
 use std::{fmt::Debug, ops::{Add, Sub, BitAnd, Div, Neg}};
-use num::{Integer, NumCast};
-use crate::{traits::TileCoords, hex::{CubeCoords, DoubledCoords, OffsetCoords}};
+use num::{Integer, NumCast, Signed};
+use crate::{traits::TileCoords, hex::{CubeCoords, OffsetCoords}};
 
 
 
@@ -35,7 +35,7 @@ impl<T> AxialCoords<T> {
 
 // TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------- //
 
-impl<T> TileCoords<T> for AxialCoords<T> where T: Copy + Debug + Integer + NumCast {
+impl<T> TileCoords<T> for AxialCoords<T> where T: Copy + Debug + NumCast + Signed {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
 		let one: T = NumCast::from(1).unwrap();
 		let zero: T = NumCast::from(0).unwrap();
@@ -50,8 +50,8 @@ impl<T> TileCoords<T> for AxialCoords<T> where T: Copy + Debug + Integer + NumCa
 		]
     }
 
-    fn distance<D>(&self, other: &Self) -> D where D: Integer {
-        todo!()
+    fn distance<D>(&self, other: &Self) -> D where D: Integer + From<T> {
+        CubeCoords::from(self).distance(&CubeCoords::from(other))
     }
 }
 
@@ -101,16 +101,6 @@ impl<T> From<CubeCoords<T>> for AxialCoords<T>
 	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
     fn from(c: CubeCoords<T>) -> Self {
 		Self { q: c.q, r: c.r }
-    }
-}
-
-impl<T> From<DoubledCoords<T>> for AxialCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub<Output=T>
-{
-	/// Creates a new axial coordinate pair from the given doubled coordinates [as described in the
-	/// article](https://www.redblobgames.com/grids/hexagons/#conversions-doubled)
-    fn from(c: DoubledCoords<T>) -> Self {
-        Self::from(OffsetCoords::from(c))
     }
 }
 
@@ -165,6 +155,14 @@ mod tests {
 				assert!(adjacent_coords.contains(&AxialCoords::new(2, -4)));
 				assert!(adjacent_coords.contains(&AxialCoords::new(3, -4)));
 			}
+
+			#[test]
+			fn distance() {
+				assert_eq!(0, AxialCoords::splat(0).distance(&AxialCoords::splat(0)));
+				assert_eq!(1, AxialCoords::new(1, -1).distance(&AxialCoords::splat(0)));
+				assert_eq!(2, AxialCoords::new(1, -1).distance(&AxialCoords::new(-1, 0)));
+				assert_eq!(3, AxialCoords::new(2, -1).distance(&AxialCoords::new(-1, 0)));
+			}
 		}
 
 		#[test]
@@ -190,12 +188,6 @@ mod tests {
 			assert_eq!(AxialCoords::new(-1, -1), CubeCoords::new(-1, -1, 2).into());
 			assert_eq!(AxialCoords::new(0, -2), CubeCoords::new(0, -2, 2).into());
 			assert_eq!(AxialCoords::new(1, -2), CubeCoords::new(1, -2, 1).into());
-		}
-		
-		#[test]
-		#[ignore]
-		fn from_doubled_coords() {
-			assert_eq!(AxialCoords::new(0, 0), DoubledCoords::new(0, 0).into());
 		}
 
 		#[test]
