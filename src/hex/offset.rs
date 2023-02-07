@@ -228,12 +228,5 @@ mod tests {
 			assert_eq!(OffsetCoords::new(1, 2), CubeCoords::new(0, 2, -2).into());
 			assert_eq!(OffsetCoords::new(2, 2), CubeCoords::new(1, 2, -3).into());
 		}
-
-		#[test]
-		#[ignore]
-		fn from_doubled_coords() {
-			assert_eq!(OffsetCoords::new(0, 0), DoubledCoords::new(0, 0).into());
-			todo!()
-		}
 	}
 }
