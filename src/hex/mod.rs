@@ -5,5 +5,4 @@
 
 pub mod axial; pub use axial::AxialCoords;
 pub mod cube; pub use cube::CubeCoords;
-pub mod doubled; pub use doubled::DoubledCoords;
 pub mod offset; pub use offset::OffsetCoords;

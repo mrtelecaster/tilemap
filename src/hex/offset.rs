@@ -1,8 +1,8 @@
 //! Offset hex coordinates. Simple method for making pseudo-rectangular maps
 
 use std::{fmt::Debug, ops::{Add, BitAnd, Div, Neg, Sub}};
-use num::NumCast;
-use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords, DoubledCoords}};
+use num::{NumCast, Integer, Signed};
+use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords}};
 
 
 
@@ -35,8 +35,11 @@ impl<T> OffsetCoords<T> {
 	}
 }
 
+
+/// TILE COORDS TRAIT IMPLEMENTATION ------------------------------------------------------------ //
+
 impl<T> TileCoords<T> for OffsetCoords<T>
-where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq
+where T: Add<Output=T> + BitAnd<Output=T> + Copy + Debug + Div<Output=T> + Neg<Output=T> + NumCast + PartialEq + Signed + Sub<Output=T>
 {
     fn adjacent_coords(&self) -> Vec<Self> {
 		let neg_one: T = NumCast::from(-1).unwrap();
@@ -50,6 +53,10 @@ where T: Add<Output=T> + Copy + Debug + NumCast + PartialEq
 			self + OffsetCoords::new(neg_one, one),
 			self + OffsetCoords::new(neg_one, zero),
 		]
+    }
+
+    fn distance<D>(&self, other: &Self) -> D where D: Integer + From<T> {
+        CubeCoords::from(self).distance(&CubeCoords::from(other))
     }
 }
 
@@ -114,15 +121,8 @@ where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub
     }
 }
 
-impl<T> From<DoubledCoords<T>> for OffsetCoords<T>
-where T: Add<Output=T> + BitAnd<Output=T> + Copy + Div<Output=T> + NumCast + Sub<Output=T>
-{
-    fn from(c: DoubledCoords<T>) -> Self {
-        Self::from(AxialCoords::from(c))
-    }
-}
 
-
+// UNIT TESTS ----------------------------------------------------------------------------------- //
 
 #[cfg(test)]
 mod tests {
@@ -160,6 +160,14 @@ mod tests {
 				assert!(adjacent_coords.contains(&OffsetCoords::new(3, 3)));
 				assert!(adjacent_coords.contains(&OffsetCoords::new(2, 3)));
 				assert!(adjacent_coords.contains(&OffsetCoords::new(2, 2)));
+			}
+
+			#[test]
+			fn distance() {
+				assert_eq!(0, OffsetCoords::splat(0).distance(&OffsetCoords::splat(0)));
+				assert_eq!(1, OffsetCoords::new(1, 0).distance(&OffsetCoords::splat(0)));
+				assert_eq!(2, OffsetCoords::new(1, 0).distance(&OffsetCoords::new(-1, -1)));
+				assert_eq!(3, OffsetCoords::new(1, 1).distance(&OffsetCoords::new(-1, -1)));
 			}
 		}
 
