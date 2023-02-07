@@ -86,6 +86,10 @@ impl TileCoords for CubeCoords {
 		}
 		tiles
     }
+
+    fn to_world(&self) -> (f32, f32) {
+        AxialCoords::from(self).to_world()
+    }
 }
 
 
