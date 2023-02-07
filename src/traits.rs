@@ -15,4 +15,10 @@ pub trait TileCoords: Debug + Sized + PartialEq {
 	fn distance(&self, other: &Self) -> isize;
 
 	fn line_to(&self, other: &Self) -> Vec<Self>;
+
+	fn from_world(x: f32, y: f32) -> Self;
+
+	/// Converts this tile coordinate into cartesian world coordinates, representing the center of
+	/// the tile.
+	fn to_world(&self) -> (f32, f32);
 }

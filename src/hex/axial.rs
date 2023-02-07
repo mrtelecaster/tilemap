@@ -58,6 +58,20 @@ impl TileCoords for AxialCoords {
 		}
 		tiles
     }
+
+    fn to_world(&self) -> (f32, f32) {
+		let sqrt_3 = (3 as f32).sqrt();
+		let x = sqrt_3 * self.q as f32 + sqrt_3 / 2.0 * self.r as f32;
+		let y = 3.0 / 2.0 * self.r as f32;
+        (x, y)
+    }
+
+    fn from_world(x: f32, y: f32) -> Self {
+		let sqrt_3 = (3 as f32).sqrt();
+		let q = (sqrt_3 / 3.0 * x - 1.0 / 3.0 * y).round() as isize;
+		let r = (2.0 / 3.0 * y).round() as isize;
+        Self{ q, r }
+    }
 }
 
 
@@ -109,11 +123,31 @@ impl From<CubeCoords> for AxialCoords
     }
 }
 
+impl From<&CubeCoords> for AxialCoords
+{
+	/// Creates a new axial coordinate from the given cube coordinate
+	/// [as described here](https://www.redblobgames.com/grids/hexagons/#conversions-axial)
+    fn from(c: &CubeCoords) -> Self {
+		Self { q: c.q, r: c.r }
+    }
+}
+
 impl From<OffsetCoords> for AxialCoords
 {
 	/// Creates a new axial coordinate pair from the given set of offset coordinates
 	/// [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: OffsetCoords) -> Self {
+        let q = c.q - (c.r - (c.r & 1)) / 2;
+		let r = c.r;
+		Self{ q, r }
+    }
+}
+
+impl From<&OffsetCoords> for AxialCoords
+{
+	/// Creates a new axial coordinate pair from the given set of offset coordinates
+	/// [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
+    fn from(c: &OffsetCoords) -> Self {
         let q = c.q - (c.r - (c.r & 1)) / 2;
 		let r = c.r;
 		Self{ q, r }
@@ -132,6 +166,7 @@ mod tests {
 		mod tile_coords {
 
 			use super::*;
+			use approx::assert_ulps_eq;
 
 			#[test]
 			fn adjacent() {
@@ -164,6 +199,54 @@ mod tests {
 				assert_eq!(1, AxialCoords::new(1, -1).distance(&AxialCoords::splat(0)));
 				assert_eq!(2, AxialCoords::new(1, -1).distance(&AxialCoords::new(-1, 0)));
 				assert_eq!(3, AxialCoords::new(2, -1).distance(&AxialCoords::new(-1, 0)));
+			}
+
+			#[test]
+			fn from_world() {
+				let width = (3.0 as f32).sqrt();
+				let height = 2.0;
+
+				assert_eq!(AxialCoords::new(0, 0), AxialCoords::from_world(0.0, 0.0));
+				assert_eq!(AxialCoords::new(1, 0), AxialCoords::from_world(width, 0.0));
+				assert_eq!(AxialCoords::new(0, 1), AxialCoords::from_world(width * 0.5, height * 0.75));
+				assert_eq!(AxialCoords::new(-1, 1), AxialCoords::from_world(width * -0.5, height * 0.75));
+				assert_eq!(AxialCoords::new(-1, 0), AxialCoords::from_world(-width, 0.0));
+				assert_eq!(AxialCoords::new(0, -1), AxialCoords::from_world(width * -0.5, height * -0.75));
+				assert_eq!(AxialCoords::new(1, -1), AxialCoords::from_world(width * 0.5, height * -0.75));
+			}
+
+			#[test]
+			fn to_world() {
+				let width = (3.0 as f32).sqrt();
+				let height = 2.0;
+
+				let (x, y) = AxialCoords::new(0, 0).to_world();
+				assert_ulps_eq!(0.0, x);
+				assert_ulps_eq!(0.0, y);
+
+				let (x, y) = AxialCoords::new(1, 0).to_world();
+				assert_ulps_eq!(width, x);
+				assert_ulps_eq!(0.0, y);
+
+				let (x, y) = AxialCoords::new(0, 1).to_world();
+				assert_ulps_eq!(width * 0.5, x);
+				assert_ulps_eq!(height * 0.75, y);
+
+				let (x, y) = AxialCoords::new(-1, 1).to_world();
+				assert_ulps_eq!(width * -0.5, x);
+				assert_ulps_eq!(height * 0.75, y);
+
+				let (x, y) = AxialCoords::new(-1, 0).to_world();
+				assert_ulps_eq!(-width, x);
+				assert_ulps_eq!(0.0, y);
+
+				let (x, y) = AxialCoords::new(0, -1).to_world();
+				assert_ulps_eq!(width * -0.5, x);
+				assert_ulps_eq!(height * -0.75, y);
+
+				let (x, y) = AxialCoords::new(1, -1).to_world();
+				assert_ulps_eq!(width * 0.5, x);
+				assert_ulps_eq!(height * -0.75, y);
 			}
 		}
 
