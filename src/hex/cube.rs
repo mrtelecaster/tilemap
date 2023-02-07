@@ -3,11 +3,8 @@
 use std::{fmt::Debug, ops::{Add, Sub}};
 use crate::{
 	traits::TileCoords,
-	hex::{AxialCoords, OffsetCoords},
+	hex::{AxialCoords, OffsetCoords, util::cube_round},
 };
-
-use super::util::cube_round;
-
 
 
 // CUBE COORDINATE STRUCT ----------------------------------------------------------------------- //
@@ -56,16 +53,13 @@ impl CubeCoords {
 impl TileCoords for CubeCoords {
 
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
-		let one = 1;
-		let zero = 0;
-		let neg_one = -1;
         vec![
-			self + CubeCoords::new(one, neg_one, zero),
-			self + CubeCoords::new(one, zero, neg_one),
-			self + CubeCoords::new(zero, one, neg_one),
-			self + CubeCoords::new(neg_one, one, zero),
-			self + CubeCoords::new(neg_one, zero, one),
-			self + CubeCoords::new(zero, neg_one, one),
+			self + CubeCoords::new(1, -1, 0),
+			self + CubeCoords::new(1, 0, -1),
+			self + CubeCoords::new(0, 1, -1),
+			self + CubeCoords::new(-1, 1, 0),
+			self + CubeCoords::new(-1, 0, 1),
+			self + CubeCoords::new(0, -1, 1),
 		]
     }
 
@@ -74,8 +68,7 @@ impl TileCoords for CubeCoords {
 		let q = vec.q.abs();
 		let r = vec.r.abs();
 		let s = vec.s.abs();
-		let two = 2;
-		((q + r + s) / two).into()
+		(q + r + s) / 2
     }
 }
 
@@ -156,8 +149,8 @@ impl Sub<&CubeCoords> for &CubeCoords {
 
 impl From<AxialCoords> for CubeCoords
 {
-	/// Creates a new cube coordinate from the given axial coordinate [as described here]
-	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
+	/// Creates a new cube coordinate from the given axial coordinate
+	/// [as described here](https://www.redblobgames.com/grids/hexagons/#conversions-axial)
     fn from(c: AxialCoords) -> Self {
         Self{
 			q: c.q,
@@ -176,7 +169,8 @@ impl From<&AxialCoords> for CubeCoords
 
 impl From<OffsetCoords> for CubeCoords
 {
-	/// Creates a new cube coordinate set from the given offset coordinates, [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
+	/// Creates a new cube coordinate set from the given offset coordinates,
+	/// [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: OffsetCoords) -> Self {
         Self::from(AxialCoords::from(c))
     }

@@ -40,16 +40,13 @@ impl OffsetCoords {
 impl TileCoords for OffsetCoords
 {
     fn adjacent_coords(&self) -> Vec<Self> {
-		let neg_one = -1;
-		let zero = 0;
-		let one = 1;
         vec![
-			self + OffsetCoords::new(neg_one, neg_one),
-			self + OffsetCoords::new(zero, neg_one),
-			self + OffsetCoords::new(one, zero),
-			self + OffsetCoords::new(zero, one),
-			self + OffsetCoords::new(neg_one, one),
-			self + OffsetCoords::new(neg_one, zero),
+			self + OffsetCoords::new(-1, -1),
+			self + OffsetCoords::new(0, -1),
+			self + OffsetCoords::new(1, 0),
+			self + OffsetCoords::new(0, 1),
+			self + OffsetCoords::new(-1, 1),
+			self + OffsetCoords::new(-1, 0),
 		]
     }
 
@@ -103,9 +100,7 @@ impl From<AxialCoords> for OffsetCoords
 	/// Creates a new offset coordinate pair from the given axial coordinates, [as described in the
 	/// article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: AxialCoords) -> Self {
-		let one = 1;
-		let two = 2;
-        let q = c.q + (c.r - (c.r & one)) / two;
+        let q = c.q + (c.r - (c.r & 1)) / 2;
 		let r = c.r;
 		Self{ q, r }
     }

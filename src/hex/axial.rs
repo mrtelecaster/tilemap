@@ -36,16 +36,13 @@ impl AxialCoords {
 
 impl TileCoords for AxialCoords {
     fn adjacent_coords(&self) -> Vec<Self> where Self: Sized {
-		let one = 1;
-		let zero = 0;
-		let neg_one = -1;
         vec![
-			self + AxialCoords::new(one, zero),
-			self + AxialCoords::new(zero, one),
-			self + AxialCoords::new(neg_one, one),
-			self + AxialCoords::new(neg_one, zero),
-			self + AxialCoords::new(zero, neg_one),
-			self + AxialCoords::new(one, neg_one),
+			self + AxialCoords::new(1, 0),
+			self + AxialCoords::new(0, 1),
+			self + AxialCoords::new(-1, 1),
+			self + AxialCoords::new(-1, 0),
+			self + AxialCoords::new(0, -1),
+			self + AxialCoords::new(1, -1),
 		]
     }
 
@@ -96,8 +93,8 @@ impl Sub for AxialCoords {
 
 impl From<CubeCoords> for AxialCoords
 {
-	/// Creates a new axial coordinate from the given cube coordinate [as described here]
-	/// (https://www.redblobgames.com/grids/hexagons/#conversions-axial)
+	/// Creates a new axial coordinate from the given cube coordinate
+	/// [as described here](https://www.redblobgames.com/grids/hexagons/#conversions-axial)
     fn from(c: CubeCoords) -> Self {
 		Self { q: c.q, r: c.r }
     }
@@ -105,12 +102,10 @@ impl From<CubeCoords> for AxialCoords
 
 impl From<OffsetCoords> for AxialCoords
 {
-	/// Creates a new axial coordinate pair from the given set of offset coordinates [as described
-	/// in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
+	/// Creates a new axial coordinate pair from the given set of offset coordinates
+	/// [as described in the article](https://www.redblobgames.com/grids/hexagons/#conversions-offset)
     fn from(c: OffsetCoords) -> Self {
-		let one = 1;
-		let two = 2;
-        let q = c.q - (c.r - (c.r & one)) / two;
+        let q = c.q - (c.r - (c.r & 1)) / 2;
 		let r = c.r;
 		Self{ q, r }
     }
