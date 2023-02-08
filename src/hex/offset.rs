@@ -51,7 +51,7 @@ impl TileCoords for OffsetCoords
     }
 
     fn distance(&self, other: &Self) -> isize {
-        CubeCoords::from(self).distance(&CubeCoords::from(other))
+        AxialCoords::from(self).distance(&AxialCoords::from(other))
     }
 
     fn line_to(&self, other: &Self) -> Vec<Self> {
