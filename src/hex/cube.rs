@@ -112,6 +112,14 @@ impl TileCoords for CubeCoords {
 		}
 		output_tiles
     }
+
+    fn area_tiles(&self, radius: isize) -> Vec<Self> {
+		let mut tiles = Vec::new();
+        for i in 0..radius+1 {
+			tiles.append(&mut self.ring_tiles(i));
+		}
+		tiles
+    }
 }
 
 
@@ -353,6 +361,35 @@ mod tests {
 				let ring = center.ring_tiles(0);
 				assert_eq!(1, ring.len());
 				assert!(ring.contains(&center));
+			}
+
+			#[test]
+			fn area_tiles() {
+				let center = CubeCoords::new(1, 1, -2);
+				let set = center.area_tiles(2);
+
+				assert!(set.contains(&CubeCoords::new(1, 1, -2)));
+
+				assert!(set.contains(&CubeCoords::new(1, 0, -1)));
+				assert!(set.contains(&CubeCoords::new(2, 0, -2)));
+				assert!(set.contains(&CubeCoords::new(2, 1, -3)));
+				assert!(set.contains(&CubeCoords::new(1, 2, -3)));
+				assert!(set.contains(&CubeCoords::new(0, 2, -2)));
+				assert!(set.contains(&CubeCoords::new(0, 1, -1)));
+
+				assert!(set.contains(&CubeCoords::new(3, 1, -4)));
+				assert!(set.contains(&CubeCoords::new(2, 2, -4)));
+				assert!(set.contains(&CubeCoords::new(1, 3, -4)));
+				assert!(set.contains(&CubeCoords::new(0, 3, -3)));
+				assert!(set.contains(&CubeCoords::new(-1, 3, -2)));
+				assert!(set.contains(&CubeCoords::new(-1, 2, -1)));
+				assert!(set.contains(&CubeCoords::new(-1, 1, 0)));
+				assert!(set.contains(&CubeCoords::new(0, 0, 0)));
+				assert!(set.contains(&CubeCoords::new(1, -1, 0)));
+				assert!(set.contains(&CubeCoords::new(2, -1, -1)));
+				assert!(set.contains(&CubeCoords::new(3, -1, -2)));
+				assert!(set.contains(&CubeCoords::new(3, 0, -3)));
+				assert_eq!(19, set.len());
 			}
 		}
 

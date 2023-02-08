@@ -30,4 +30,6 @@ pub trait TileCoords: Debug + Sized + PartialEq {
 
 	/// Returns a set of coordinates that form a ring of adjacent tiles a given distance from `self`
 	fn ring_tiles(&self, radius: isize) -> Vec<Self>;
+
+	fn area_tiles(&self, radius: isize) -> Vec<Self>;
 }
