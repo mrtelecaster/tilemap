@@ -1,6 +1,6 @@
 //! Cube coordinates. Has simpler math than axial coords, but takes up more space.
 
-use std::{fmt::Debug, ops::{Add, Sub}};
+use std::{fmt::Debug, ops::{Add, Sub, Mul}};
 use lerp::Lerp;
 
 use crate::{
@@ -96,6 +96,32 @@ impl TileCoords for CubeCoords {
     fn from_world(x: f32, y: f32) -> Self {
         Self::from(AxialCoords::from_world(x, y))
     }
+
+    fn ring_tiles(&self, radius: isize) -> Vec<Self> {
+		if radius == 0 {
+			return vec![CubeCoords::new(self.q, self.r, self.s)];
+		} else if radius < 0 {
+			return vec![];
+		}
+		let mut output_tiles = Vec::new();
+		for i in 0..radius {
+			output_tiles.push(self + CubeCoords::new(-1, 1, 0) * radius + CubeCoords::new(1, 0, -1) * i);
+			output_tiles.push(self + CubeCoords::new(-1, 0, 1) * radius + CubeCoords::new(0, 1, -1) * i);
+			output_tiles.push(self + CubeCoords::new(0, -1, 1) * radius + CubeCoords::new(-1, 1, 0) * i);
+			output_tiles.push(self + CubeCoords::new(1, -1, 0) * radius + CubeCoords::new(-1, 0, 1) * i);
+			output_tiles.push(self + CubeCoords::new(1, 0, -1) * radius + CubeCoords::new(0, -1, 1) * i);
+			output_tiles.push(self + CubeCoords::new(0, 1, -1) * radius + CubeCoords::new(1, -1, 0) * i);
+		}
+		output_tiles
+    }
+
+    fn area_tiles(&self, radius: isize) -> Vec<Self> {
+		let mut tiles = Vec::new();
+        for i in 0..radius+1 {
+			tiles.append(&mut self.ring_tiles(i));
+		}
+		tiles
+    }
 }
 
 
@@ -151,6 +177,17 @@ impl Add<&CubeCoords> for &CubeCoords {
 			s: self.s + rhs.s,
 		}
     }
+}
+
+impl Mul<isize> for CubeCoords {
+	type Output = Self;
+	fn mul(self, rhs: isize) -> Self::Output {
+		Self{
+			q: self.q * rhs,
+			r: self.r * rhs,
+			s: self.s * rhs,
+		}
+	}
 }
 
 impl Sub for CubeCoords {
@@ -292,6 +329,69 @@ mod tests {
 				let start = CubeCoords::new(1, 0, -1);
 				let line = start.line_to(&end);
 				assert_eq!(1, line.len());
+			}
+		
+			#[test]
+			fn ring_tiles() {
+				let center = CubeCoords::splat(0);
+				let ring = center.ring_tiles(1);
+				assert!(ring.contains(&CubeCoords::new(1, -1, 0)));
+				assert!(ring.contains(&CubeCoords::new(1, 0, -1)));
+				assert!(ring.contains(&CubeCoords::new(0, 1, -1)));
+				assert!(ring.contains(&CubeCoords::new(-1, 1, 0)));
+				assert!(ring.contains(&CubeCoords::new(-1, 0, 1)));
+				assert!(ring.contains(&CubeCoords::new(0, -1, 1)));
+				assert_eq!(6, ring.len());
+
+				let center = CubeCoords::new(1, 1, -2);
+				let ring = center.ring_tiles(2);
+				assert!(ring.contains(&CubeCoords::new(3, 1, -4)));
+				assert!(ring.contains(&CubeCoords::new(2, 2, -4)));
+				assert!(ring.contains(&CubeCoords::new(1, 3, -4)));
+				assert!(ring.contains(&CubeCoords::new(0, 3, -3)));
+				assert!(ring.contains(&CubeCoords::new(-1, 3, -2)));
+				assert!(ring.contains(&CubeCoords::new(-1, 2, -1)));
+				assert!(ring.contains(&CubeCoords::new(-1, 1, 0)));
+				assert!(ring.contains(&CubeCoords::new(0, 0, 0)));
+				assert!(ring.contains(&CubeCoords::new(1, -1, 0)));
+				assert!(ring.contains(&CubeCoords::new(2, -1, -1)));
+				assert!(ring.contains(&CubeCoords::new(3, -1, -2)));
+				assert!(ring.contains(&CubeCoords::new(3, 0, -3)));
+				assert_eq!(12, ring.len());
+
+				let center = CubeCoords::splat(0);
+				let ring = center.ring_tiles(0);
+				assert_eq!(1, ring.len());
+				assert!(ring.contains(&center));
+			}
+
+			#[test]
+			fn area_tiles() {
+				let center = CubeCoords::new(1, 1, -2);
+				let set = center.area_tiles(2);
+
+				assert!(set.contains(&CubeCoords::new(1, 1, -2)));
+
+				assert!(set.contains(&CubeCoords::new(1, 0, -1)));
+				assert!(set.contains(&CubeCoords::new(2, 0, -2)));
+				assert!(set.contains(&CubeCoords::new(2, 1, -3)));
+				assert!(set.contains(&CubeCoords::new(1, 2, -3)));
+				assert!(set.contains(&CubeCoords::new(0, 2, -2)));
+				assert!(set.contains(&CubeCoords::new(0, 1, -1)));
+
+				assert!(set.contains(&CubeCoords::new(3, 1, -4)));
+				assert!(set.contains(&CubeCoords::new(2, 2, -4)));
+				assert!(set.contains(&CubeCoords::new(1, 3, -4)));
+				assert!(set.contains(&CubeCoords::new(0, 3, -3)));
+				assert!(set.contains(&CubeCoords::new(-1, 3, -2)));
+				assert!(set.contains(&CubeCoords::new(-1, 2, -1)));
+				assert!(set.contains(&CubeCoords::new(-1, 1, 0)));
+				assert!(set.contains(&CubeCoords::new(0, 0, 0)));
+				assert!(set.contains(&CubeCoords::new(1, -1, 0)));
+				assert!(set.contains(&CubeCoords::new(2, -1, -1)));
+				assert!(set.contains(&CubeCoords::new(3, -1, -2)));
+				assert!(set.contains(&CubeCoords::new(3, 0, -3)));
+				assert_eq!(19, set.len());
 			}
 		}
 

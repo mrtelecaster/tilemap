@@ -1,9 +1,10 @@
 //! Offset hex coordinates. Simple method for making pseudo-rectangular maps
 
-use std::{fmt::Debug, ops::{Add, Sub}};
+use std::{fmt::Debug, ops::{Add, Sub, Mul}};
 use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords}};
 
 
+// OFFSET COORDS DEFINITION --------------------------------------------------------------------- //
 
 /// Offset coordinate system for hexagonal tile maps. Good for use in rectangular maps
 #[derive(Debug, PartialEq)]
@@ -70,6 +71,23 @@ impl TileCoords for OffsetCoords
     fn from_world(x: f32, y: f32) -> Self {
         Self::from(AxialCoords::from_world(x, y))
     }
+
+    fn ring_tiles(&self, radius: isize) -> Vec<Self> {
+        let axial_tiles = AxialCoords::from(self).ring_tiles(radius);
+		let mut offset_tiles = Vec::new();
+		for tile in axial_tiles {
+			offset_tiles.push(OffsetCoords::from(tile));
+		}
+		offset_tiles
+    }
+
+    fn area_tiles(&self, radius: isize) -> Vec<Self> {
+		let mut tiles = Vec::new();
+        for n in 0..radius+1 {
+			tiles.append(&mut self.ring_tiles(n));
+		}
+		tiles
+    }
 }
 
 
@@ -97,6 +115,15 @@ impl Add<OffsetCoords> for &OffsetCoords {
 			r: self.r + rhs.r,
 		}
 	}
+}
+
+impl Mul<isize> for OffsetCoords
+{
+    type Output = Self;
+
+    fn mul(self, rhs: isize) -> Self::Output {
+        Self::new(self.q * rhs, self.r * rhs)
+    }
 }
 
 impl Sub for OffsetCoords
@@ -179,6 +206,69 @@ mod tests {
 				assert_eq!(1, OffsetCoords::new(1, 0).distance(&OffsetCoords::splat(0)));
 				assert_eq!(2, OffsetCoords::new(1, 0).distance(&OffsetCoords::new(-1, -1)));
 				assert_eq!(3, OffsetCoords::new(1, 1).distance(&OffsetCoords::new(-1, -1)));
+			}
+
+			#[test]
+			fn ring_tiles() {
+				let center = OffsetCoords::splat(0);
+				let ring = center.ring_tiles(1);
+				assert!(ring.contains(&OffsetCoords::new(0, 1)));
+				assert!(ring.contains(&OffsetCoords::new(-1, 1)));
+				assert!(ring.contains(&OffsetCoords::new(-1, 0)));
+				assert!(ring.contains(&OffsetCoords::new(-1, -1)));
+				assert!(ring.contains(&OffsetCoords::new(0, -1)));
+				assert!(ring.contains(&OffsetCoords::new(1, 0)));
+				assert_eq!(6, ring.len());
+
+				let center = OffsetCoords::new(0, 1);
+				let ring = center.ring_tiles(2);
+				assert!(ring.contains(&OffsetCoords::new(-1, -1)));
+				assert!(ring.contains(&OffsetCoords::new(0, -1)));
+				assert!(ring.contains(&OffsetCoords::new(1, -1)));
+				assert!(ring.contains(&OffsetCoords::new(1, 3)));
+				assert!(ring.contains(&OffsetCoords::new(0, 3)));
+				assert!(ring.contains(&OffsetCoords::new(-1, 2)));
+				assert!(ring.contains(&OffsetCoords::new(-1, 2)));
+				assert!(ring.contains(&OffsetCoords::new(-1, 0)));
+				assert!(ring.contains(&OffsetCoords::new(0, -1)));
+				assert!(ring.contains(&OffsetCoords::new(1, -1)));
+				assert!(ring.contains(&OffsetCoords::new(2, 0)));
+				assert!(ring.contains(&OffsetCoords::new(2, 1)));
+				assert_eq!(12, ring.len());
+
+				let center = OffsetCoords::splat(0);
+				let ring = center.ring_tiles(0);
+				assert_eq!(1, ring.len());
+				assert!(ring.contains(&center));
+			}
+
+			#[test]
+			fn area_tiles() {
+				let center = OffsetCoords::new(1, 1);
+				let set = center.area_tiles(2);
+
+				assert!(set.contains(&OffsetCoords::new(1, 1)));
+
+				assert!(set.contains(&OffsetCoords::new(0, 1)));
+				assert!(set.contains(&OffsetCoords::new(-1, 1)));
+				assert!(set.contains(&OffsetCoords::new(-1, 0)));
+				assert!(set.contains(&OffsetCoords::new(-1, -1)));
+				assert!(set.contains(&OffsetCoords::new(0, -1)));
+				assert!(set.contains(&OffsetCoords::new(1, 0)));
+
+				assert!(set.contains(&OffsetCoords::new(-1, -1)));
+				assert!(set.contains(&OffsetCoords::new(0, -1)));
+				assert!(set.contains(&OffsetCoords::new(1, -1)));
+				assert!(set.contains(&OffsetCoords::new(1, 3)));
+				assert!(set.contains(&OffsetCoords::new(0, 3)));
+				assert!(set.contains(&OffsetCoords::new(-1, 2)));
+				assert!(set.contains(&OffsetCoords::new(-1, 2)));
+				assert!(set.contains(&OffsetCoords::new(-1, 0)));
+				assert!(set.contains(&OffsetCoords::new(0, -1)));
+				assert!(set.contains(&OffsetCoords::new(1, -1)));
+				assert!(set.contains(&OffsetCoords::new(2, 0)));
+				assert!(set.contains(&OffsetCoords::new(2, 1)));
+				assert_eq!(19, set.len());
 			}
 		}
 
