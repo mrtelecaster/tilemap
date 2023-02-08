@@ -94,6 +94,10 @@ impl TileCoords for CubeCoords {
     fn from_world(x: f32, y: f32) -> Self {
         Self::from(AxialCoords::from_world(x, y))
     }
+
+    fn ring_tiles(&self) -> Vec<Self> {
+		todo!()
+    }
 }
 
 
