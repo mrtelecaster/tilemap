@@ -48,7 +48,11 @@ impl TileCoords for AxialCoords {
     }
 
     fn distance(&self, other: &Self) -> isize {
-        CubeCoords::from(self).distance(&CubeCoords::from(other))
+        let mut distance = 0;
+		distance += (self.q - other.q).abs();
+		distance += (self.q + self.r - other.q - other.r).abs();
+		distance += (self.r - other.r).abs();
+		distance / 2
     }
 
     fn line_to(&self, other: &Self) -> Vec<Self> {
