@@ -29,5 +29,5 @@ pub trait TileCoords: Debug + Sized + PartialEq {
 	fn line_to(&self, other: &Self) -> Vec<Self>;
 
 	/// Returns a set of coordinates that form a ring of adjacent tiles a given distance from `self`
-	fn ring_tiles(&self) -> Vec<Self>;
+	fn ring_tiles(&self, radius: isize) -> Vec<Self>;
 }

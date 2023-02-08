@@ -73,7 +73,7 @@ impl TileCoords for AxialCoords {
         Self{ q, r }
     }
 
-    fn ring_tiles(&self) -> Vec<Self> {
+    fn ring_tiles(&self, radius: isize) -> Vec<Self> {
         todo!()
     }
 }

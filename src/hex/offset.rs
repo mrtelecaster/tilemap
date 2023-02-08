@@ -71,7 +71,7 @@ impl TileCoords for OffsetCoords
         Self::from(AxialCoords::from_world(x, y))
     }
 
-    fn ring_tiles(&self) -> Vec<Self> {
+    fn ring_tiles(&self, radius: isize) -> Vec<Self> {
         todo!()
     }
 }
