@@ -9,9 +9,11 @@ use crate::{
 };
 
 
+
 // CUBE COORDINATE STRUCT ----------------------------------------------------------------------- //
 
-/// Cube coordinate set
+/// Cube coordinate system for hexagonal tiles. Performant when doing math operations, good for
+/// hexagonal maps
 #[derive(Debug, PartialEq)]
 pub struct CubeCoords {
 	pub q: isize,
