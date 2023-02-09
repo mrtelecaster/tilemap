@@ -244,7 +244,7 @@ mod tests {
 
 			#[test]
 			fn area_tiles() {
-				let center = OffsetCoords::new(1, 1);
+				let center = OffsetCoords::new(0, 1);
 				let set = center.area_tiles(2);
 
 				assert!(set.contains(&OffsetCoords::new(1, 1)));
