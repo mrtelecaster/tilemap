@@ -10,4 +10,5 @@
 //! directions), so keep that in mind if using this for another engine.
 
 pub mod traits;
+pub mod map;
 pub mod hex;
