@@ -1,15 +1,14 @@
 //! Traits used to make the tile systems generic. Implement these traits to create your own custom
 //! tile types.
 
-use std::fmt::Debug;
-
+use std::{fmt::Debug, hash::Hash};
 use num::NumCast;
 
 
 
 /// Trait for creating different types of tile coordinate systems. Implement this for a struct to
 /// use that struct as tile map coordinates.
-pub trait TileCoords: Debug + Sized + PartialEq {
+pub trait TileCoords: Debug + Eq + Hash + Sized {
 
 	/// Create a new instance of tile coordinates from the given world position
 	fn from_world(x: f32, y: f32) -> Self;
