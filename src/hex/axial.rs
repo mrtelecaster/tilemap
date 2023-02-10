@@ -1,10 +1,11 @@
 //! Axial hex coordinates. More space efficient than cube but math is a bit of a pain.
 
-use std::{fmt::Debug, ops::{Add, Sub}};
+use std::{fmt::Debug, ops::{Add, Sub, Mul}};
 use crate::{traits::TileCoords, hex::{CubeCoords, OffsetCoords}};
 
 
 
+/// Axial coordinate system for hexagonal tiles. Space efficient and works well for hexagonal maps
 #[derive(Debug, PartialEq)]
 pub struct AxialCoords {
 	pub q: isize,
@@ -72,6 +73,32 @@ impl TileCoords for AxialCoords {
 		let r = (2.0 / 3.0 * y).round() as isize;
         Self{ q, r }
     }
+
+    fn ring_tiles(&self, radius: isize) -> Vec<Self> {
+        if radius == 0 {
+			return vec![AxialCoords::new(self.q, self.r)];
+		} else if radius < 0 {
+			return vec![];
+		}
+		let mut tiles = Vec::new();
+		for i in 0..radius {
+			tiles.push(self + AxialCoords::new(1, -1) * radius + AxialCoords::new(0, 1) * i);
+			tiles.push(self + AxialCoords::new(1, 0) * radius + AxialCoords::new(-1, 1) * i);
+			tiles.push(self + AxialCoords::new(0, 1) * radius + AxialCoords::new(-1, 0) * i);
+			tiles.push(self + AxialCoords::new(-1, 1) * radius + AxialCoords::new(0, -1) * i);
+			tiles.push(self + AxialCoords::new(-1, 0) * radius + AxialCoords::new(1, -1) * i);
+			tiles.push(self + AxialCoords::new(0, -1) * radius + AxialCoords::new(1, 0) * i);
+		}
+		tiles
+    }
+
+    fn area_tiles(&self, radius: isize) -> Vec<Self> {
+		let mut tiles = Vec::new();
+        for n in 0..radius+1 {
+			tiles.append(&mut self.ring_tiles(n));
+		}
+		tiles
+    }
 }
 
 
@@ -98,6 +125,14 @@ impl Add<AxialCoords> for &AxialCoords {
 			q: self.q + rhs.q,
 			r: self.r + rhs.r,
 		}
+	}
+}
+
+impl Mul<isize> for AxialCoords {
+	type Output = Self;
+
+	fn mul(self, rhs: isize) -> Self::Output {
+		Self::new(self.q * rhs, self.r * rhs)
 	}
 }
 
@@ -247,6 +282,69 @@ mod tests {
 				let (x, y) = AxialCoords::new(1, -1).to_world();
 				assert_ulps_eq!(width * 0.5, x);
 				assert_ulps_eq!(height * -0.75, y);
+			}
+
+			#[test]
+			fn ring_tiles() {
+				let center = AxialCoords::splat(0);
+				let ring = center.ring_tiles(1);
+				assert!(ring.contains(&AxialCoords::new(1, -1)));
+				assert!(ring.contains(&AxialCoords::new(1, 0)));
+				assert!(ring.contains(&AxialCoords::new(0, 1)));
+				assert!(ring.contains(&AxialCoords::new(-1, 1)));
+				assert!(ring.contains(&AxialCoords::new(-1, 0)));
+				assert!(ring.contains(&AxialCoords::new(0, -1)));
+				assert_eq!(6, ring.len());
+
+				let center = AxialCoords::new(1, 1);
+				let ring = center.ring_tiles(2);
+				assert!(ring.contains(&AxialCoords::new(3, 1)));
+				assert!(ring.contains(&AxialCoords::new(2, 2)));
+				assert!(ring.contains(&AxialCoords::new(1, 3)));
+				assert!(ring.contains(&AxialCoords::new(0, 3)));
+				assert!(ring.contains(&AxialCoords::new(-1, 3)));
+				assert!(ring.contains(&AxialCoords::new(-1, 2)));
+				assert!(ring.contains(&AxialCoords::new(-1, 1)));
+				assert!(ring.contains(&AxialCoords::new(0, 0)));
+				assert!(ring.contains(&AxialCoords::new(1, -1)));
+				assert!(ring.contains(&AxialCoords::new(2, -1)));
+				assert!(ring.contains(&AxialCoords::new(3, -1)));
+				assert!(ring.contains(&AxialCoords::new(3, 0)));
+				assert_eq!(12, ring.len());
+
+				let center = AxialCoords::splat(0);
+				let ring = center.ring_tiles(0);
+				assert_eq!(1, ring.len());
+				assert!(ring.contains(&center));
+			}
+
+			#[test]
+			fn area_tiles() {
+				let center = AxialCoords::new(1, 1);
+				let set = center.area_tiles(2);
+
+				assert!(set.contains(&AxialCoords::new(1, 1)));
+
+				assert!(set.contains(&AxialCoords::new(1, 0)));
+				assert!(set.contains(&AxialCoords::new(2, 0)));
+				assert!(set.contains(&AxialCoords::new(2, 1)));
+				assert!(set.contains(&AxialCoords::new(1, 2)));
+				assert!(set.contains(&AxialCoords::new(0, 2)));
+				assert!(set.contains(&AxialCoords::new(0, 1)));
+
+				assert!(set.contains(&AxialCoords::new(3, 1)));
+				assert!(set.contains(&AxialCoords::new(2, 2)));
+				assert!(set.contains(&AxialCoords::new(1, 3)));
+				assert!(set.contains(&AxialCoords::new(0, 3)));
+				assert!(set.contains(&AxialCoords::new(-1, 3)));
+				assert!(set.contains(&AxialCoords::new(-1, 2)));
+				assert!(set.contains(&AxialCoords::new(-1, 1)));
+				assert!(set.contains(&AxialCoords::new(0, 0)));
+				assert!(set.contains(&AxialCoords::new(1, -1)));
+				assert!(set.contains(&AxialCoords::new(2, -1)));
+				assert!(set.contains(&AxialCoords::new(3, -1)));
+				assert!(set.contains(&AxialCoords::new(3, 0)));
+				assert_eq!(19, set.len());
 			}
 		}
 

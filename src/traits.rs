@@ -11,18 +11,29 @@ use num::NumCast;
 /// use that struct as tile map coordinates.
 pub trait TileCoords: Debug + Sized + PartialEq {
 
-	/// Returns a [`Vec`] of coordinates that are adjacent to this set of coordinates
-	fn adjacent_coords(&self) -> Vec<Self>;
-
-	fn distance(&self, other: &Self) -> isize;
-
-	fn line_to(&self, other: &Self) -> Vec<Self>;
-
+	/// Create a new instance of tile coordinates from the given world position
 	fn from_world(x: f32, y: f32) -> Self;
 
 	/// Converts this tile coordinate into cartesian world coordinates, representing the center of
 	/// the tile.
 	fn to_world(&self) -> (f32, f32);
+
+	/// Get the tile distance between `self` and the given coordinates.
+	/// 
+	/// Tile distance is the number of "jumps" that would have to be made across adjacent tiles to
+	/// get from `self` to `other`
+	fn distance(&self, other: &Self) -> isize;
+
+	/// Returns a set of coordinates that are adjacent to this set of coordinates
+	fn adjacent_coords(&self) -> Vec<Self>;
+
+	/// Returns a set of coordinates that form a straight line of adjacent tiles from `self` to `other`
+	fn line_to(&self, other: &Self) -> Vec<Self>;
+
+	/// Returns a set of coordinates that form a ring of adjacent tiles a given distance from `self`
+	fn ring_tiles(&self, radius: isize) -> Vec<Self>;
+
+	fn area_tiles(&self, radius: isize) -> Vec<Self>;
 }
 
 
