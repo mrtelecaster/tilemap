@@ -25,7 +25,7 @@ impl<C> Pathfinder<C> where C: Eq + Hash {
 	}
 
 	/// Finds a path from `start` to `end` coordinates
-	pub fn find_path<T>(&mut self, map: &TileMap<C, T>, start: C, end: C) -> Option<Vec<C>> where C: Copy + TileCoords {
+	pub fn find_path<T>(&mut self, map: &TileMap<C, T>, start: C, end: C) -> Option<Vec<C>> where C: Copy + TileCoords, T: Tile {
 		self.coords_to_search.clear();
 		self.searched_coords.clear();
 		self.path_map = TileMap::new();
@@ -48,7 +48,7 @@ impl<C> Pathfinder<C> where C: Eq + Hash {
 				// if coords correspond to a tile, test it, otherwise skip it
 				if let Some(world_tile) = map.get_tile(&adjacent_coord)
 				{
-					self.test_coords(&adjacent_coord, &test_coords, cost_from_test_coords + 1);
+					self.test_coords(&adjacent_coord, &test_coords, cost_from_test_coords + world_tile.pathfind_cost::<T>());
 				}
 			}
 		}

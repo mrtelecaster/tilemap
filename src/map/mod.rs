@@ -95,6 +95,20 @@ mod tests
 
 		impl Tile for EmptyTile {}
 
+		enum CostTestTile {
+			Ground,
+			Road,
+		}
+
+		impl Tile for CostTestTile {
+			fn pathfind_cost<T>(&self) -> isize {
+				match self {
+					Self::Ground => 4,
+					Self::Road => 1,
+				}
+			}
+		}
+
 		#[test]
 		#[ignore]
 		fn equal_cost() {
@@ -108,6 +122,38 @@ mod tests
 			assert_eq!(4, path.len());
 			assert!(path.contains(&AxialCoords::new(-2, 1)));
 			assert!(path.contains(&AxialCoords::new(1, -1)));
+		}
+
+		#[test]
+		#[ignore]
+		fn variable_cost()
+		{
+			// initialize map
+			let mut map: HexMap<CostTestTile> = HexMap::new();
+			let center = AxialCoords::splat(0);
+			let initial_coords = center.area_tiles(3);
+			for coord in initial_coords.iter() {
+				map.insert_tile(*coord, CostTestTile::Ground);
+			}
+
+			// define an S shaped curve of roads that should be longer than the direct path
+			map.insert_tile(AxialCoords::new(-2, 2), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(-2, 1), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(-1, 0), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(0, 0), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(0, 1), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(1, 1), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(2, 0), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(2, -1), CostTestTile::Road);
+			map.insert_tile(AxialCoords::new(2, -2), CostTestTile::Road);
+
+			let path = map.find_path(AxialCoords::new(-2, 2), AxialCoords::new(2, -2));
+
+			assert_eq!(9, path.len());
+			assert!(path.contains(&AxialCoords::new(-2, 2)));
+			assert!(path.contains(&AxialCoords::new(-2, 1)));
+			assert!(path.contains(&AxialCoords::new(2, -2)));
+			assert!(path.contains(&AxialCoords::new(2, 0)));
 		}
 	}
 }

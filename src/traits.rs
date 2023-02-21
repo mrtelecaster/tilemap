@@ -43,7 +43,7 @@ pub trait Tile {
 	/// 
 	/// Default implementation returns `1`, so if your game does not need to have different movement
 	/// costs for different types of tiles, then you don't need to implement this function.
-	fn pathfind_cost<T>(&self) -> T where T: NumCast {
-		NumCast::from(1).unwrap()
+	fn pathfind_cost<T>(&self) -> isize {
+		1
 	}
 }
