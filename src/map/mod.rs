@@ -22,11 +22,20 @@ impl<C, T> TileMap<C, T>
 		Self{ map: HashMap::new() }
 	}
 
+	pub fn contains_coords(&self, coord: &C) -> bool where C: Eq + Hash {
+		self.map.contains_key(coord)
+	}
+
 	/// Gets the tile that's at the given coordinates. If there is no tile at those coordinates,
 	/// `None` is returned.
 	pub fn get_tile(&self, coord: &C) -> Option<&T> where C: Eq + Hash
 	{
 		self.map.get(coord)
+	}
+
+	pub fn get_tile_mut(&mut self, coord: &C) -> Option<&mut T> where C: Eq + Hash
+	{
+		self.map.get_mut(coord)
 	}
 
 	/// Insert a new tile into the map at the given coordinates.
