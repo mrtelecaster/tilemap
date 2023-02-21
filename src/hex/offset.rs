@@ -7,7 +7,7 @@ use crate::{traits::TileCoords, hex::{AxialCoords, CubeCoords}};
 // OFFSET COORDS DEFINITION --------------------------------------------------------------------- //
 
 /// Offset coordinate system for hexagonal tile maps. Good for use in rectangular maps
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct OffsetCoords {
 	/// Column
 	pub q: isize,

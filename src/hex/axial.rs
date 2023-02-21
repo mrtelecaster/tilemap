@@ -6,7 +6,7 @@ use crate::{traits::TileCoords, hex::{CubeCoords, OffsetCoords}};
 
 
 /// Axial coordinate system for hexagonal tiles. Space efficient and works well for hexagonal maps
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct AxialCoords {
 	pub q: isize,
 	pub r: isize,

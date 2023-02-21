@@ -14,7 +14,7 @@ use crate::{
 
 /// Cube coordinate system for hexagonal tiles. Performant when doing math operations, good for
 /// hexagonal maps
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct CubeCoords {
 	pub q: isize,
 	pub r: isize,

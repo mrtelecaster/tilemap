@@ -1,13 +1,14 @@
 //! Traits used to make the tile systems generic. Implement these traits to create your own custom
 //! tile types.
 
-use std::fmt::Debug;
+use std::{fmt::Debug, hash::Hash};
+use num::NumCast;
 
 
 
 /// Trait for creating different types of tile coordinate systems. Implement this for a struct to
 /// use that struct as tile map coordinates.
-pub trait TileCoords: Debug + Sized + PartialEq {
+pub trait TileCoords: Debug + Eq + Hash + Sized {
 
 	/// Create a new instance of tile coordinates from the given world position
 	fn from_world(x: f32, y: f32) -> Self;
@@ -32,4 +33,17 @@ pub trait TileCoords: Debug + Sized + PartialEq {
 	fn ring_tiles(&self, radius: isize) -> Vec<Self>;
 
 	fn area_tiles(&self, radius: isize) -> Vec<Self>;
+}
+
+
+/// Trait used to denote tile data that can be stored in a tilemap and used for pathfinding
+pub trait Tile {
+
+	/// Returns the cost of traversing this tile. Used for pathfinding.
+	/// 
+	/// Default implementation returns `1`, so if your game does not need to have different movement
+	/// costs for different types of tiles, then you don't need to implement this function.
+	fn pathfind_cost<T>(&self) -> isize {
+		1
+	}
 }
