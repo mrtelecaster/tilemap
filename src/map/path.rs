@@ -11,7 +11,7 @@ pub struct PathfindNode<C> {
 }
 
 /// Finds a path from `start` to `end` coordinates
-pub fn find_path<C, T>(map: &TileMap<C, T>, start: C, end: C) -> Option<Vec<C>> where C: Clone + Copy + TileCoords, T: Tile {
+pub fn find_path<C, T, F>(map: &TileMap<C, T>, start: C, end: C, cost_fn: F) -> Option<Vec<C>> where C: Clone + Copy + TileCoords, T: Copy + Tile, F: Fn(T) -> isize {
 
 	let mut pathmap = TileMap::<C, PathfindNode<C>>::new();
 	pathmap.insert_tile(start, PathfindNode{ total_cost: 0, from_coords: None });
@@ -47,7 +47,7 @@ pub fn find_path<C, T>(map: &TileMap<C, T>, start: C, end: C) -> Option<Vec<C>> 
 			
 			let cost_from_test_coords = {
 				let test_node = pathmap.get_tile(&test_coords).unwrap();
-				test_node.total_cost + adjacent_tile.pathfind_cost::<T>()
+				test_node.total_cost + cost_fn(*adjacent_tile)
 			};
 			if pathmap.contains_coords(adjacent_coord) {
 				let mut adjacent_node = pathmap.get_tile_mut(adjacent_coord).unwrap();

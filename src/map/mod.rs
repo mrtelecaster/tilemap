@@ -57,8 +57,8 @@ impl<C, T> TileMap<C, T>
 		self.map.insert(coord, tile)
 	}
 
-	pub fn find_path(&self, start: C, end: C) -> Option<Vec<C>> where C: Clone + Copy + TileCoords, T: Tile {
-		find_path(self, start, end)
+	pub fn find_path<F>(&self, start: C, end: C, cost_fn: F) -> Option<Vec<C>> where C: Clone + Copy + TileCoords, T: Copy + Tile, F: Fn(T) -> isize {
+		find_path(self, start, end, cost_fn)
 	}
 
 	pub fn len(&self) -> usize {
@@ -121,7 +121,7 @@ mod tests
 			let mut map: HexMap<EmptyTile> = HexMap::new();
 			let center = AxialCoords::splat(0);
 			map.init_area(center, EmptyTile, 2);
-			let path = map.find_path(AxialCoords::new(-2, 1), AxialCoords::new(1, -1)).unwrap();
+			let path = map.find_path(AxialCoords::new(-2, 1), AxialCoords::new(1, -1), |_| { 1 }).unwrap();
 			assert_eq!(4, path.len());
 			assert!(path.contains(&AxialCoords::new(-2, 1)));
 			assert!(path.contains(&AxialCoords::new(1, -1)));
@@ -146,7 +146,7 @@ mod tests
 			map.insert_tile(AxialCoords::new(2, -1), CostTestTile::Road);
 			map.insert_tile(AxialCoords::new(2, -2), CostTestTile::Road);
 
-			let path = map.find_path(AxialCoords::new(-2, 2), AxialCoords::new(2, -2)).unwrap();
+			let path = map.find_path(AxialCoords::new(-2, 2), AxialCoords::new(2, -2), |tile| tile.pathfind_cost::<CostTestTile>() ).unwrap();
 
 			assert_eq!(9, path.len());
 			assert!(path.contains(&AxialCoords::new(-2, 2)));
