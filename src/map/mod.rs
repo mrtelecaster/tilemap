@@ -22,6 +22,13 @@ impl<C, T> TileMap<C, T>
 		Self{ map: HashMap::new() }
 	}
 
+	pub fn init_area(&mut self, center: C, tile: T, radius: isize) where C: Copy + TileCoords, T: Clone {
+		let coords_to_add = center.area_tiles(radius);
+		for coord in coords_to_add.iter() {
+			self.insert_tile(*coord, tile.clone());
+		}
+	}
+
 	pub fn contains_coords(&self, coord: &C) -> bool where C: Eq + Hash {
 		self.map.contains_key(coord)
 	}
@@ -47,7 +54,7 @@ impl<C, T> TileMap<C, T>
 		self.map.insert(coord, tile)
 	}
 
-	pub fn find_path(&self, start: C, end: C) -> Vec<C> where C: Clone + TileCoords, T: Tile {
+	pub fn find_path(&self, _start: C, _end: C) -> Vec<C> where C: Clone + TileCoords, T: Tile {
 		/*
 		let mut searched_nodes: TileMap<C, PathfindingTile<C>> = TileMap::new();
 		let mut nodes_to_search: TileMap<C, PathfindingTile<C>> = TileMap::new();
@@ -88,13 +95,14 @@ mod tests
 
 	mod pathfinding
 	{
-		use crate::traits::TileCoords;
 		use super::*;
 
+		#[derive(Copy, Clone)]
 		struct EmptyTile;
 
 		impl Tile for EmptyTile {}
 
+		#[derive(Clone, Copy)]
 		enum CostTestTile {
 			Ground,
 			Road,
@@ -110,14 +118,24 @@ mod tests
 		}
 
 		#[test]
+		fn init_area() {
+			let mut map: HexMap<EmptyTile>  = HexMap::new();
+			let center = AxialCoords::splat(0);
+			assert_eq!(0, map.len());
+			map.init_area(center, EmptyTile, 0);
+			assert_eq!(1, map.len());
+			map.init_area(center, EmptyTile, 1);
+			assert_eq!(7, map.len());
+			map.init_area(center, EmptyTile, 2);
+			assert_eq!(19, map.len());
+		}
+
+		#[test]
 		#[ignore]
 		fn equal_cost() {
 			let mut map: HexMap<EmptyTile> = HexMap::new();
 			let center = AxialCoords::splat(0);
-			let initial_coords = center.area_tiles(2);
-			for coord in initial_coords.iter() {
-				map.insert_tile(*coord, EmptyTile);
-			}
+			map.init_area(center, EmptyTile, 2);
 			let path = map.find_path(AxialCoords::new(-2, 1), AxialCoords::new(1, -1));
 			assert_eq!(4, path.len());
 			assert!(path.contains(&AxialCoords::new(-2, 1)));
@@ -131,10 +149,7 @@ mod tests
 			// initialize map
 			let mut map: HexMap<CostTestTile> = HexMap::new();
 			let center = AxialCoords::splat(0);
-			let initial_coords = center.area_tiles(3);
-			for coord in initial_coords.iter() {
-				map.insert_tile(*coord, CostTestTile::Ground);
-			}
+			map.init_area(center, CostTestTile::Ground, 3);
 
 			// define an S shaped curve of roads that should be longer than the direct path
 			map.insert_tile(AxialCoords::new(-2, 2), CostTestTile::Road);

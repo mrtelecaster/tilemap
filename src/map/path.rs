@@ -145,7 +145,7 @@ mod tests
 {
 	use std::path::Path;
 
-use super::*;
+	use super::*;
 	use crate::hex::AxialCoords;
 
 	#[test]

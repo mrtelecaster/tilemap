@@ -2,7 +2,6 @@
 //! tile types.
 
 use std::{fmt::Debug, hash::Hash};
-use num::NumCast;
 
 
 
