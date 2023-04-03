@@ -3,7 +3,7 @@
 use std::{collections::HashMap, hash::Hash};
 use crate::{hex::AxialCoords, traits::{TileCoords, Tile}};
 
-use self::path::Pathfinder;
+use self::path::find_path;
 
 mod path;
 
@@ -58,7 +58,7 @@ impl<C, T> TileMap<C, T>
 	}
 
 	pub fn find_path(&self, start: C, end: C) -> Option<Vec<C>> where C: Clone + Copy + TileCoords, T: Tile {
-		Pathfinder::find_path(self, start, end)
+		find_path(self, start, end)
 	}
 
 	pub fn len(&self) -> usize {
@@ -74,6 +74,7 @@ pub type HexMap<T> = TileMap<AxialCoords, T>;
 
 // UNIT TESTS ----------------------------------------------------------------------------------- //
 
+#[cfg(test)]
 mod tests
 {
 	use super::*;
