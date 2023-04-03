@@ -1,2 +1,6 @@
+# Rust artifacts
 /target
 /Cargo.lock
+
+# Development environment
+/.vscode
