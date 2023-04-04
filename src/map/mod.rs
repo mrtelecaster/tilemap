@@ -32,6 +32,22 @@ impl<C, T> TileMap<C, T>
 		}
 	}
 
+	pub fn iter(&self) -> std::collections::hash_map::Iter<C, T> {
+		self.map.iter()
+	}
+
+	pub fn iter_coords(&self) -> std::collections::hash_map::Keys<C, T> {
+		self.map.keys()
+	}
+
+	pub fn iter_tiles(&self) -> std::collections::hash_map::Values<C, T> {
+		self.map.values()
+	}
+
+	pub fn iter_pos(&self) -> Vec<(f32, f32)> where C: TileCoords {
+		self.map.keys().map(|coord| coord.to_world()).collect()
+	}
+
 	pub fn contains_coords(&self, coord: &C) -> bool where C: Eq + Hash {
 		self.map.contains_key(coord)
 	}
@@ -65,6 +81,7 @@ impl<C, T> TileMap<C, T>
 		self.map.len()
 	}
 }
+
 
 // MAP ALIASES ---------------------------------------------------------------------------------- //
 
