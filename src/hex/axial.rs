@@ -1,12 +1,15 @@
 //! Axial hex coordinates. More space efficient than cube but math is a bit of a pain.
 
 use std::{fmt::Debug, ops::{Add, Sub, Mul}};
+use serde::{Deserialize, Serialize};
+
 use crate::{traits::TileCoords, hex::{CubeCoords, OffsetCoords}};
 
 
 
 /// Axial coordinate system for hexagonal tiles. Space efficient and works well for hexagonal maps
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Serialize, Deserialize)]
 pub struct AxialCoords {
 	pub q: isize,
 	pub r: isize,

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 lerp = "0.4"
 num = "0.4"
+serde = {version="*", features=["derive"]}
 
 [dev-dependencies]
 approx = "0.5"

@@ -1,9 +1,8 @@
 //! Tilemap related things
 
 use std::{collections::HashMap, hash::Hash};
+use serde::{Deserialize, Serialize};
 use crate::{hex::AxialCoords, traits::{TileCoords, Tile}};
-
-use self::path::find_path;
 
 mod path;
 
@@ -12,12 +11,13 @@ mod path;
 
 /// A structure that can hold a map of tiles at arbitrary coordinates
 #[derive(Clone)]
-pub struct TileMap<C, T>
+#[derive(Serialize, Deserialize)]
+pub struct TileMap<C, T> where C: Eq + Hash
 {
 	map: HashMap<C, T>,
 }
 
-impl<C, T> TileMap<C, T>
+impl<C, T> TileMap<C, T> where C: Eq + Hash
 {
 	/// Creates a new `TileMap` with no tiles
 	pub fn new() -> Self
@@ -74,7 +74,7 @@ impl<C, T> TileMap<C, T>
 	}
 
 	pub fn find_path(&self, start: C, end: C) -> Option<Vec<C>> where C: Clone + Copy + TileCoords, T: Tile {
-		find_path(self, start, end)
+		path::find_path(self, start, end)
 	}
 
 	pub fn len(&self) -> usize {
