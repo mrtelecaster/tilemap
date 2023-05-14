@@ -189,6 +189,31 @@ impl From<&OffsetCoords> for AxialCoords
     }
 }
 
+#[cfg(bevy)]
+mod bevy_vector_conversion
+{
+	use bevy::prelude::*;
+
+	impl From<Vec3> for AxialCoords
+	{
+		fn from(vec: Vec3) -> Self {
+			Self.from_world(vec.x, vec.z)
+		}
+	}
+
+	#[cfg(test)]
+	mod tests
+	{
+		use super::*;
+
+		#[test]
+		fn from_vec3()
+		{
+			let coords = AxialCoords::from(Vec3::new(0.0, 0.0, 0.0));
+		}
+	}
+}
+
 #[cfg(test)]
 mod tests {
 
