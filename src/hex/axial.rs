@@ -189,15 +189,24 @@ impl From<&OffsetCoords> for AxialCoords
     }
 }
 
-#[cfg(bevy)]
+#[cfg(feature="bevy")]
 mod bevy_vector_conversion
 {
+	use super::*;
 	use bevy::prelude::*;
 
 	impl From<Vec3> for AxialCoords
 	{
 		fn from(vec: Vec3) -> Self {
-			Self.from_world(vec.x, vec.z)
+			Self::from_world(vec.x, vec.z)
+		}
+	}
+
+	impl Into<Vec3> for AxialCoords
+	{
+		fn into(self) -> Vec3 {
+			let (pos_x, pos_z) = self.to_world();
+			Vec3::new(pos_x, 0.0, pos_z)
 		}
 	}
 
@@ -205,11 +214,39 @@ mod bevy_vector_conversion
 	mod tests
 	{
 		use super::*;
+		use approx::assert_ulps_eq;
 
 		#[test]
 		fn from_vec3()
 		{
-			let coords = AxialCoords::from(Vec3::new(0.0, 0.0, 0.0));
+			let test_cases = vec![
+				(AxialCoords::new(0, 0), Vec3::new(0.0, 0.0, 0.0)),
+				(AxialCoords::new(0, 0), Vec3::new(0.8, 0.0, 0.0)),
+				(AxialCoords::new(1, 0), Vec3::new(0.9, 0.0, 0.0)),
+			];
+
+			for (expected, source) in test_cases
+			{
+				let result = AxialCoords::from(source);
+				assert_eq!(expected.q, result.q);
+				assert_eq!(expected.r, result.r);
+			}
+		}
+
+		#[test]
+		fn into_vec3()
+		{
+			let test_cases = vec![
+				(AxialCoords::new(0, 0), Vec3::new(0.0, 0.0, 0.0)),
+			];
+
+			for (source, expected) in test_cases
+			{
+				let result: Vec3 = source.into();
+				assert_ulps_eq!(expected.x, result.x);
+				assert_ulps_eq!(expected.y, result.y);
+				assert_ulps_eq!(expected.z, result.z);
+			}
 		}
 	}
 }
